@@ -29,8 +29,8 @@ FILE_END
 
 cat > apps/customer/lib/supabase_config.dart << 'FILE_END'
 class SupabaseConfig {
-  static const String url = 'https://YOUR-PROJECT.supabase.co';
-  static const String anonKey = 'YOUR-ANON-KEY';
+  static const String url = 'https://pqovaolgcjrgjoeqkdlf.supabase.co';
+  static const String anonKey = 'هنا تحط المفتاح اللي نسخته';
 }
 FILE_END
 
