@@ -1,21 +1,43 @@
 workflows:
   customer-android:
     name: Customer App - Android
-    max_build_duration: 30
+    max_build_duration: 45
     instance_type: mac_mini_m2
     environment:
       flutter: stable
+      java: 17
+    cache:
+      cache_paths:
+        - ~/.gradle/caches
+        - ~/.pub-cache
     scripts:
-      - name: Get packages
+      - name: Set up local.properties
+        script: |
+          cd apps/customer/android
+          echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
+
+      - name: Ensure Gradle wrapper
+        script: |
+          cd apps/customer/android
+          mkdir -p gradle/wrapper
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            curl -L -o gradle/wrapper/gradle-wrapper.jar \
+              https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar
+          fi
+
+      - name: Flutter pub get
         script: |
           cd apps/customer
           flutter pub get
+
       - name: Build APK
         script: |
           cd apps/customer
           flutter build apk --release
+
     artifacts:
       - apps/customer/build/app/outputs/**/*.apk
+
     publishing:
       email:
         recipients:
@@ -26,18 +48,39 @@ workflows:
 
   merchant-android:
     name: Merchant App - Android
-    max_build_duration: 30
+    max_build_duration: 45
     instance_type: mac_mini_m2
     environment:
       flutter: stable
+      java: 17
+    cache:
+      cache_paths:
+        - ~/.gradle/caches
+        - ~/.pub-cache
     scripts:
-      - name: Get packages
+      - name: Set up local.properties
+        script: |
+          cd apps/merchant/android
+          echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
+
+      - name: Ensure Gradle wrapper
+        script: |
+          cd apps/merchant/android
+          mkdir -p gradle/wrapper
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            curl -L -o gradle/wrapper/gradle-wrapper.jar \
+              https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar
+          fi
+
+      - name: Flutter pub get
         script: |
           cd apps/merchant
           flutter pub get
+
       - name: Build APK
         script: |
           cd apps/merchant
           flutter build apk --release
+
     artifacts:
       - apps/merchant/build/app/outputs/**/*.apk
