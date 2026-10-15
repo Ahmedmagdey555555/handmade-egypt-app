@@ -21,6 +21,13 @@ workflows:
           cd apps/customer
           flutter create --platforms=android --org com.handmade --project-name customer_app .
 
+      - name: Add INTERNET permission
+        script: |
+          cd apps/customer/android/app/src/main
+          sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/>\n    <application|' AndroidManifest.xml
+          echo "=== AndroidManifest after fix ==="
+          head -20 AndroidManifest.xml
+
       - name: Set up local.properties
         script: |
           cd apps/customer/android
