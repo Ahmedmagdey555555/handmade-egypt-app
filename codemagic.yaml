@@ -1,7 +1,7 @@
 workflows:
   customer-android:
     name: Customer App - Android
-    max_build_duration: 60
+    max_build_duration: 90
     instance_type: mac_mini_m2
     environment:
       flutter: stable
@@ -15,22 +15,26 @@ workflows:
         script: |
           chmod +x setup-phase1a.sh
           bash setup-phase1a.sh
-
       - name: Rebuild Phase 1B
         script: |
           chmod +x setup-phase1b.sh
           bash setup-phase1b.sh
-
       - name: Rebuild Phase 1C
         script: |
           chmod +x setup-phase1c.sh
           bash setup-phase1c.sh
-
+      - name: Rebuild Phase 1D
+        script: |
+          chmod +x setup-phase1d.sh
+          bash setup-phase1d.sh
+      - name: Rebuild Phase 1E
+        script: |
+          chmod +x setup-phase1e.sh
+          bash setup-phase1e.sh
       - name: Generate android folder
         script: |
           cd apps/customer
           flutter create --platforms=android --org com.handmade --project-name customer_app .
-
       - name: Write AndroidManifest with INTERNET
         script: |
           cd apps/customer/android/app/src/main
@@ -70,28 +74,35 @@ workflows:
                       <action android:name="android.intent.action.PROCESS_TEXT"/>
                       <data android:mimeType="text/plain"/>
                   </intent>
+                  <intent>
+                      <action android:name="android.intent.action.VIEW"/>
+                      <data android:scheme="https"/>
+                  </intent>
+                  <intent>
+                      <action android:name="android.intent.action.DIAL"/>
+                  </intent>
               </queries>
           </manifest>
           MANIFEST_END
-
       - name: Set up local.properties
         script: |
           cd apps/customer/android
           echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
-
       - name: Flutter pub get
         script: |
           cd apps/customer
           flutter pub get
-
       - name: Build APK
         script: |
           cd apps/customer
           flutter build apk --release
-
+      - name: Build AAB
+        script: |
+          cd apps/customer
+          flutter build appbundle --release
     artifacts:
       - apps/customer/build/app/outputs/**/*.apk
-
+      - apps/customer/build/app/outputs/**/*.aab
     publishing:
       email:
         recipients:
