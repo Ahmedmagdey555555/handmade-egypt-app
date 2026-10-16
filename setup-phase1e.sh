@@ -39,10 +39,18 @@ class MyApp extends StatelessWidget {
         title: 'Handmade',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorSchemeSeed: const Color(0xFFB07D62),
-          useMaterial3: true,
-          scaffoldBackgroundColor: const Color(0xFFFAF7F2),
-        ),
+  colorSchemeSeed: const Color(0xFFB07D62),
+  useMaterial3: true,
+  scaffoldBackgroundColor: const Color(0xFFFAF7F2),
+  textTheme: GoogleFonts.cairoTextTheme(),
+  appBarTheme: AppBarTheme(
+    titleTextStyle: GoogleFonts.cairo(
+      fontSize: 20,
+      fontWeight: FontWeight.bold,
+      color: Colors.white,
+    ),
+  ),
+),
         locale: const Locale('ar'),
         supportedLocales: const [Locale('ar'), Locale('en')],
         localizationsDelegates: const [
