@@ -36,6 +36,7 @@ dependencies:
   provider: ^6.1.2
   permission_handler: ^11.3.0
   url_launcher: ^6.2.5
+  google_fonts: ^6.1.0
 
 flutter:
   uses-material-design: true
