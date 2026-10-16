@@ -31,6 +31,14 @@ workflows:
         script: |
           chmod +x setup-phase1e.sh
           bash setup-phase1e.sh
+      - name: Rebuild Phase 1F
+        script: |
+          chmod +x setup-phase1f.sh
+          bash setup-phase1f.sh
+      - name: Rebuild Phase 1G
+        script: |
+          chmod +x setup-phase1g.sh
+          bash setup-phase1g.sh
       - name: Generate android folder
         script: |
           cd apps/customer
