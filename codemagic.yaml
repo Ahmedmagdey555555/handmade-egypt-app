@@ -84,6 +84,12 @@ workflows:
               </queries>
           </manifest>
           MANIFEST_END
+      - name: Convert SVG to PNG
+        script: |
+          cd apps/customer
+          pip3 install cairosvg --quiet
+          python3 -c "import cairosvg; cairosvg.svg2png(url='assets/icon.svg', write_to='assets/icon.png', output_width=1024, output_height=1024)"
+          ls -la assets/
       - name: Set up local.properties
         script: |
           cd apps/customer/android
@@ -92,6 +98,10 @@ workflows:
         script: |
           cd apps/customer
           flutter pub get
+      - name: Generate launcher icons
+        script: |
+          cd apps/customer
+          dart run flutter_launcher_icons
       - name: Build APK
         script: |
           cd apps/customer
