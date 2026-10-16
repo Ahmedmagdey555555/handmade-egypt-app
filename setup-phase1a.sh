@@ -11,12 +11,9 @@ mkdir -p apps/customer/lib/screens
 cat > apps/customer/lib/supabase_config.dart << 'FILE_END'
 class SupabaseConfig {
   static const String url = 'https://pqovaolgcjrgjoeqkdlf.supabase.co';
-  static const String anonKey = 'المفتاح_الكامل_هنا';
+  static const String anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxb3Zhb2xnY2pyZ2pvZXFrZGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwOTM1NTYsImV4cCI6MjEwNzY2OTU1Nn0.PWA4foPpi15pWl-Hviutu_9stJctjFJor4xx0ghU90Y';
 }
 FILE_END
-mkdir -p apps/customer/lib/models
-mkdir -p apps/customer/lib/providers
-mkdir -p apps/customer/lib/screens
 
 # ============ pubspec.yaml ============
 cat > apps/customer/pubspec.yaml << 'FILE_END'
