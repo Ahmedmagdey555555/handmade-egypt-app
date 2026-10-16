@@ -37,6 +37,7 @@ dependencies:
   permission_handler: ^11.3.0
   url_launcher: ^6.2.5
   google_fonts: ^6.1.0
+  share_plus: ^9.0.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
