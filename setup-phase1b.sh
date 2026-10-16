@@ -4,7 +4,7 @@ set -e
 mkdir -p apps/customer/lib/screens
 mkdir -p apps/customer/lib/widgets
 
-# ============ screens/home_screen.dart ============
+# ============ home_screen.dart ============
 cat > apps/customer/lib/screens/home_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -49,8 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ]);
       if (!mounted) return;
       setState(() {
-        _products = (results[0] as List).map((e) => Product.fromMap(e)).toList();
-        _categories = (results[1] as List).map((e) => Category.fromMap(e)).toList();
+        _products =
+            (results[0] as List).map((e) => Product.fromMap(e)).toList();
+        _categories =
+            (results[1] as List).map((e) => Category.fromMap(e)).toList();
         _ads = (results[2] as List).map((e) => Ad.fromMap(e)).toList();
         _loading = false;
       });
@@ -72,8 +74,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         backgroundColor: const Color(0xFFB07D62),
         icon: const Icon(Icons.edit_note, color: Colors.white),
-        label: const Text('اطلب طلب خاص',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text(
+          'اطلب طلب خاص',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -82,7 +86,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ? const Center(child: CircularProgressIndicator())
               : CustomScrollView(
                   slivers: [
-                    // ===== Header =====
                     SliverToBoxAdapter(
                       child: Container(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -95,8 +98,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: const Color(0xFFB07D62),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.handyman,
-                                  color: Colors.white, size: 26),
+                              child: const Icon(
+                                Icons.handyman,
+                                color: Colors.white,
+                                size: 26,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             const Text(
@@ -115,10 +121,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onPressed: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (_) => const CartScreen()),
+                                      builder: (_) => const CartScreen(),
+                                    ),
                                   ),
-                                  icon: const Icon(Icons.shopping_cart_outlined,
-                                      size: 28),
+                                  icon: const Icon(
+                                    Icons.shopping_cart_outlined,
+                                    size: 28,
+                                  ),
                                 ),
                                 if (cart.count > 0)
                                   Positioned(
@@ -133,9 +142,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: Text(
                                         '${cart.count}',
                                         style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold),
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -145,8 +155,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-
-                    // ===== Search Bar =====
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -154,70 +162,35 @@ class _HomeScreenState extends State<HomeScreen> {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (_) => const SearchScreen()),
+                              builder: (_) => const SearchScreen(),
+                            ),
                           ),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 14),
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  blurRadius: 8,
-                                ),
-                              ],
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.search,
-                                    color: Colors.grey.shade500),
+                                Icon(Icons.search, color: Colors.grey.shade500),
                                 const SizedBox(width: 10),
-                                Text('ابحث عن منتج...',
-                                    style: TextStyle(
-                                        color: Colors.grey.shade500,
-                                        fontSize: 15)),
+                                Text(
+                                  'ابحث عن منتج...',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 15,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                         ),
                       ),
                     ),
-
-                    // ===== Ads Grid (2x2) =====
-                    if (_ads.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                          child: GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _ads.length > 4 ? 4 : _ads.length,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                              childAspectRatio: 2.2,
-                            ),
-                            itemBuilder: (c, i) {
-                              final ad = _ads[i];
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: ad.imageUrl == null
-                                    ? Container(color: Colors.grey.shade300)
-                                    : CachedNetworkImage(
-                                        imageUrl: ad.imageUrl!,
-                                        fit: BoxFit.cover,
-                                      ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-
-                    // ===== Categories Title =====
                     const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
@@ -231,8 +204,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-
-                    // ===== Categories Horizontal =====
                     SliverToBoxAdapter(
                       child: SizedBox(
                         height: 110,
@@ -252,7 +223,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               child: Container(
                                 width: 90,
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                                 child: Column(
                                   children: [
                                     Container(
@@ -261,17 +234,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(20),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFFB07D62)
-                                                .withOpacity(0.15),
-                                            blurRadius: 10,
-                                          ),
-                                        ],
                                       ),
                                       alignment: Alignment.center,
                                       child: Text(
-                                        cat.icon ?? '📦',
+                                        cat.icon ?? 'A',
                                         style: const TextStyle(fontSize: 30),
                                       ),
                                     ),
@@ -279,8 +245,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(
                                       cat.name,
                                       style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                       textAlign: TextAlign.center,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -293,28 +260,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-
-                    // ===== Wide Ad Banner =====
-                    if (_ads.length > 4)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
-                            child: _ads[4].imageUrl == null
-                                ? Container(
-                                    height: 100, color: Colors.grey.shade300)
-                                : CachedNetworkImage(
-                                    imageUrl: _ads[4].imageUrl!,
-                                    height: 100,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                          ),
-                        ),
-                      ),
-
-                    // ===== Products Title =====
                     const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
@@ -328,8 +273,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-
-                    // ===== Products Grid =====
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                       sliver: SliverGrid(
@@ -347,30 +290,28 @@ class _HomeScreenState extends State<HomeScreen> {
                               onTap: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => ProductDetailScreen(product: p),
+                                  builder: (_) =>
+                                      ProductDetailScreen(product: p),
                                 ),
                               ),
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(14),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 8,
-                                    ),
-                                  ],
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
                                       child: ClipRRect(
-                                        borderRadius: const BorderRadius.vertical(
-                                            top: Radius.circular(14)),
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                          top: Radius.circular(14),
+                                        ),
                                         child: p.imageUrl == null
                                             ? Container(
-                                                color: Colors.grey.shade200)
+                                                color: Colors.grey.shade200,
+                                              )
                                             : CachedNetworkImage(
                                                 imageUrl: p.imageUrl!,
                                                 fit: BoxFit.cover,
@@ -389,8 +330,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
@@ -422,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 FILE_END
 
-# ============ screens/category_products_screen.dart ============
+# ============ category_products_screen.dart ============
 cat > apps/customer/lib/screens/category_products_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -458,13 +400,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),
       appBar: AppBar(
-        title: Row(
-          children: [
-            Text(widget.category.icon ?? '📦', style: const TextStyle(fontSize: 22)),
-            const SizedBox(width: 8),
-            Text(widget.category.name),
-          ],
-        ),
+        title: Text(widget.category.name),
         backgroundColor: const Color(0xFFB07D62),
         foregroundColor: Colors.white,
       ),
@@ -493,7 +429,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => ProductDetailScreen(product: p)),
+                    builder: (_) => ProductDetailScreen(product: p),
+                  ),
                 ),
                 child: Container(
                   decoration: BoxDecoration(
@@ -505,8 +442,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                     children: [
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(14)),
+                          borderRadius:
+                              const BorderRadius.vertical(top: Radius.circular(14)),
                           child: p.imageUrl == null
                               ? Container(color: Colors.grey.shade200)
                               : CachedNetworkImage(
@@ -521,16 +458,20 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(p.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
+                            Text(
+                              p.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
                             const SizedBox(height: 4),
-                            Text('${p.price.toStringAsFixed(0)} ج.م',
-                                style: const TextStyle(
-                                    color: Color(0xFFB07D62),
-                                    fontWeight: FontWeight.bold)),
+                            Text(
+                              '${p.price.toStringAsFixed(0)} ج.م',
+                              style: const TextStyle(
+                                color: Color(0xFFB07D62),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -547,14 +488,13 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 }
 FILE_END
 
-# ============ screens/product_detail_screen.dart ============
+# ============ product_detail_screen.dart ============
 cat > apps/customer/lib/screens/product_detail_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../providers/cart_provider.dart';
-import 'cart_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
@@ -597,7 +537,9 @@ class ProductDetailScreen extends StatelessWidget {
                   const SizedBox(height: 14),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 10),
+                      horizontal: 18,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFB07D62).withOpacity(0.15),
                       borderRadius: BorderRadius.circular(22),
@@ -619,12 +561,16 @@ class ProductDetailScreen extends StatelessWidget {
                         color: Colors.green.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: Colors.green.withOpacity(0.3)),
+                          color: Colors.green.withOpacity(0.3),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.shield_outlined,
-                              color: Colors.green, size: 26),
+                          const Icon(
+                            Icons.shield_outlined,
+                            color: Colors.green,
+                            size: 26,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -642,8 +588,9 @@ class ProductDetailScreen extends StatelessWidget {
                                 Text(
                                   'المدة: ${product.warranty}',
                                   style: TextStyle(
-                                      color: Colors.green.shade700,
-                                      fontSize: 13),
+                                    color: Colors.green.shade700,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ],
                             ),
@@ -679,8 +626,43 @@ class ProductDetailScreen extends StatelessWidget {
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color
+        decoration: const BoxDecoration(color: Colors.white),
+        child: SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () {
+                    context.read<CartProvider>().add(product);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('تمت الإضافة للسلة'),
+                        behavior: SnackBarBehavior.floating,
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.shopping_cart),
+                  label: const Text(
+                    'أضف للسلة',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFFB07D62),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+FILE_END
+
+echo "setup-phase1b done"
