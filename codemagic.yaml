@@ -11,10 +11,20 @@ workflows:
         - ~/.gradle/caches
         - ~/.pub-cache
     scripts:
-      - name: Rebuild project
+      - name: Rebuild Phase 1A
         script: |
-          chmod +x setup.sh
-          bash setup.sh
+          chmod +x setup-phase1a.sh
+          bash setup-phase1a.sh
+
+      - name: Rebuild Phase 1B
+        script: |
+          chmod +x setup-phase1b.sh
+          bash setup-phase1b.sh
+
+      - name: Rebuild Phase 1C
+        script: |
+          chmod +x setup-phase1c.sh
+          bash setup-phase1c.sh
 
       - name: Generate android folder
         script: |
@@ -28,6 +38,8 @@ workflows:
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET"/>
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
               <application
                   android:label="Handmade"
                   android:name="${applicationName}"
@@ -61,8 +73,6 @@ workflows:
               </queries>
           </manifest>
           MANIFEST_END
-          echo "=== Manifest Contents ==="
-          cat AndroidManifest.xml
 
       - name: Set up local.properties
         script: |
