@@ -38,8 +38,21 @@ dependencies:
   url_launcher: ^6.2.5
   google_fonts: ^6.1.0
 
+dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: false
+  image_path: "assets/icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#B07D62"
+  adaptive_icon_foreground: "assets/icon.png"
+
 flutter:
   uses-material-design: true
+  assets:
+    - assets/
 FILE_END
 
 # ============ main.dart ============
