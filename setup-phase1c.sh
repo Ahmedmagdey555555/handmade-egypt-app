@@ -417,19 +417,69 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _address = TextEditingController();
   final _phone = TextEditingController();
   String _payment = 'vodafone';
+  String? _governorate;
+  double _deliveryFee = 0;
+  double _freeAbove = 750;
   bool _loading = false;
 
-  static const _methods = [
+  final List<Map<String, dynamic>> _zones = [];
+  final List<Map<String, dynamic>> _methods = [
     {'key': 'vodafone', 'name': 'فودافون كاش', 'icon': 'VF', 'enabled': true},
     {'key': 'etisalat', 'name': 'إتصالات كاش', 'icon': 'ET', 'enabled': true},
     {'key': 'instapay', 'name': 'إنستاباي', 'icon': 'IP', 'enabled': false},
     {'key': 'card', 'name': 'بطاقة بنكية', 'icon': 'CD', 'enabled': false},
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadZones();
+  }
+
+  Future<void> _loadZones() async {
+    try {
+      final data = await Supabase.instance.client
+          .from('delivery_zones')
+          .select()
+          .eq('is_active', true)
+          .order('governorate');
+      final settings = await Supabase.instance.client
+          .from('app_settings')
+          .select()
+          .eq('key', 'free_delivery_threshold')
+          .maybeSingle();
+
+      if (!mounted) return;
+      setState(() {
+        _zones.addAll(data.cast<Map<String, dynamic>>());
+        if (settings != null && settings['value'] != null) {
+          _freeAbove = double.tryParse(settings['value'].toString()) ?? 750;
+        }
+      });
+    } catch (_) {}
+  }
+
+  void _onGovernorateChanged(String? gov) {
+    if (gov == null) return;
+    final zone = _zones.firstWhere(
+      (z) => z['governorate'] == gov,
+      orElse: () => {},
+    );
+    setState(() {
+      _governorate = gov;
+      _deliveryFee = (zone['fee'] as num?)?.toDouble() ?? 0;
+    });
+  }
+
+  double _calculateDelivery(double cartTotal) {
+    if (cartTotal >= _freeAbove) return 0;
+    return _deliveryFee;
+  }
+
   Future<void> _submit() async {
-    if (_address.text.isEmpty || _phone.text.isEmpty) {
+    if (_address.text.isEmpty || _phone.text.isEmpty || _governorate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('من فضلك أكمل البيانات')),
+        const SnackBar(content: Text('من فضلك أكمل كل البيانات')),
       );
       return;
     }
@@ -437,13 +487,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     try {
       final cart = context.read<CartProvider>();
       final uid = Supabase.instance.client.auth.currentUser!.id;
+      final delivery = _calculateDelivery(cart.total);
 
       await Supabase.instance.client.from('orders').insert({
         'customer_id': uid,
-        'total': cart.total,
+        'total': cart.total + delivery,
         'status': 'pending',
         'address': _address.text.trim(),
         'phone': _phone.text.trim(),
+        'governorate': _governorate,
+        'delivery_fee': delivery,
       });
 
       if (!mounted) return;
@@ -484,7 +537,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final total = context.watch<CartProvider>().total;
+    final cart = context.watch<CartProvider>();
+    final delivery = _calculateDelivery(cart.total);
+    final isFree = cart.total >= _freeAbove && _governorate != null;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),
       appBar: AppBar(
@@ -500,11 +556,29 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 14),
+          DropdownButtonFormField<String>(
+            value: _governorate,
+            items: _zones
+                .map((z) => DropdownMenuItem<String>(
+                      value: z['governorate'] as String,
+                      child: Text(z['governorate'] as String),
+                    ))
+                .toList(),
+            onChanged: _onGovernorateChanged,
+            decoration: InputDecoration(
+              labelText: 'المحافظة',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              prefixIcon: const Icon(Icons.location_city_outlined),
+            ),
+          ),
+          const SizedBox(height: 14),
           TextField(
             controller: _address,
             maxLines: 3,
             decoration: InputDecoration(
-              labelText: 'عنوان التوصيل بالتفصيل',
+              labelText: 'العنوان بالتفصيل',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -608,23 +682,65 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               color: const Color(0xFFB07D62).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                const Text(
-                  'الإجمالي',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('المنتجات', style: TextStyle(fontSize: 15)),
+                    Text(
+                      '${cart.total.toStringAsFixed(0)} ج.م',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${total.toStringAsFixed(0)} ج.م',
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFB07D62),
-                  ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('التوصيل', style: TextStyle(fontSize: 15)),
+                    _governorate == null
+                        ? const Text('اختر المحافظة',
+                            style: TextStyle(fontSize: 14, color: Colors.grey))
+                        : isFree
+                            ? const Text('مجاني',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.green,
+                                ))
+                            : Text(
+                                '${delivery.toStringAsFixed(0)} ج.م',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                  ],
+                ),
+                const Divider(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'الإجمالي',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${(cart.total + delivery).toStringAsFixed(0)} ج.م',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFB07D62),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -660,6 +776,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 }
 FILE_END
+
 
 # ============ custom_order_screen.dart ============
 cat > apps/customer/lib/screens/custom_order_screen.dart << 'FILE_END'
