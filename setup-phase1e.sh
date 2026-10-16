@@ -11,6 +11,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import 'supabase_config.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'providers/cart_provider.dart';
 import 'providers/favorites_provider.dart';
 import 'screens/splash_screen.dart';
