@@ -35,6 +35,7 @@ dependencies:
   cached_network_image: ^3.3.1
   provider: ^6.1.2
   permission_handler: ^11.3.0
+  url_launcher: ^6.2.5
 
 flutter:
   uses-material-design: true
