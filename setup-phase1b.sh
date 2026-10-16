@@ -191,6 +191,35 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
+                    if (_ads.isNotEmpty)
+  SliverToBoxAdapter(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: SizedBox(
+        height: 100,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: _ads.length,
+          itemBuilder: (c, i) {
+            final ad = _ads[i];
+            return Container(
+              width: 220,
+              margin: const EdgeInsets.only(right: 10),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: ad.imageUrl == null
+                    ? Container(color: Colors.grey.shade300)
+                    : CachedNetworkImage(
+                        imageUrl: ad.imageUrl!,
+                        fit: BoxFit.cover,
+                      ),
+              ),
+            );
+          },
+        ),
+      ),
+    ),
+  ),
                     const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
