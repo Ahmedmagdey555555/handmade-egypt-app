@@ -3,7 +3,7 @@ set -e
 
 mkdir -p apps/customer/lib/screens
 
-# ============ screens/search_screen.dart ============
+# ============ search_screen.dart ============
 cat > apps/customer/lib/screens/search_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -84,11 +84,16 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.search,
-                          size: 80, color: Colors.grey.shade300),
+                      Icon(
+                        Icons.search,
+                        size: 80,
+                        color: Colors.grey.shade300,
+                      ),
                       const SizedBox(height: 12),
-                      Text('ابحث عن منتج',
-                          style: TextStyle(color: Colors.grey.shade500)),
+                      Text(
+                        'ابحث عن منتج',
+                        style: TextStyle(color: Colors.grey.shade500),
+                      ),
                     ],
                   ),
                 )
@@ -110,8 +115,8 @@ class _SearchScreenState extends State<SearchScreen> {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (_) =>
-                                    ProductDetailScreen(product: p)),
+                              builder: (_) => ProductDetailScreen(product: p),
+                            ),
                           ),
                           child: Container(
                             decoration: BoxDecoration(
@@ -124,10 +129,12 @@ class _SearchScreenState extends State<SearchScreen> {
                                 Expanded(
                                   child: ClipRRect(
                                     borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(14)),
+                                      top: Radius.circular(14),
+                                    ),
                                     child: p.imageUrl == null
                                         ? Container(
-                                            color: Colors.grey.shade200)
+                                            color: Colors.grey.shade200,
+                                          )
                                         : CachedNetworkImage(
                                             imageUrl: p.imageUrl!,
                                             fit: BoxFit.cover,
@@ -141,17 +148,22 @@ class _SearchScreenState extends State<SearchScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(p.title,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold)),
+                                      Text(
+                                        p.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                       const SizedBox(height: 4),
                                       Text(
-                                          '${p.price.toStringAsFixed(0)} ج.م',
-                                          style: const TextStyle(
-                                              color: Color(0xFFB07D62),
-                                              fontWeight: FontWeight.bold)),
+                                        '${p.price.toStringAsFixed(0)} ج.م',
+                                        style: const TextStyle(
+                                          color: Color(0xFFB07D62),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -166,7 +178,7 @@ class _SearchScreenState extends State<SearchScreen> {
 }
 FILE_END
 
-# ============ screens/cart_screen.dart ============
+# ============ cart_screen.dart ============
 cat > apps/customer/lib/screens/cart_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -194,12 +206,19 @@ class CartScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shopping_cart_outlined,
-                      size: 90, color: Colors.grey.shade300),
+                  Icon(
+                    Icons.shopping_cart_outlined,
+                    size: 90,
+                    color: Colors.grey.shade300,
+                  ),
                   const SizedBox(height: 16),
-                  Text('السلة فاضية',
-                      style: TextStyle(
-                          fontSize: 18, color: Colors.grey.shade600)),
+                  Text(
+                    'السلة فاضية',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
                 ],
               ),
             )
@@ -237,36 +256,73 @@ class CartScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(item.product.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15)),
+                            Text(
+                              item.product.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               '${item.product.price.toStringAsFixed(0)} ج.م',
                               style: const TextStyle(
-                                  color: Color(0xFFB07D62),
-                                  fontWeight: FontWeight.bold),
+                                color: Color(0xFFB07D62),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                _qtyBtn(
-                                  Icons.remove,
-                                  () => cart.decrement(item.product.id),
+                                GestureDetector(
+                                  onTap: () =>
+                                      cart.decrement(item.product.id),
+                                  child: Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFB07D62)
+                                          .withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.remove,
+                                      size: 18,
+                                      color: Color(0xFFB07D62),
+                                    ),
+                                  ),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 14),
-                                  child: Text('${item.quantity}',
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16)),
+                                    horizontal: 14,
+                                  ),
+                                  child: Text(
+                                    '${item.quantity}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                 ),
-                                _qtyBtn(
-                                  Icons.add,
-                                  () => cart.increment(item.product.id),
+                                GestureDetector(
+                                  onTap: () =>
+                                      cart.increment(item.product.id),
+                                  child: Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFB07D62)
+                                          .withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.add,
+                                      size: 18,
+                                      color: Color(0xFFB07D62),
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -275,8 +331,10 @@ class CartScreen extends StatelessWidget {
                       ),
                       IconButton(
                         onPressed: () => cart.remove(item.product.id),
-                        icon: const Icon(Icons.delete_outline,
-                            color: Colors.red),
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Colors.red,
+                        ),
                       ),
                     ],
                   ),
@@ -287,15 +345,7 @@ class CartScreen extends StatelessWidget {
           ? null
           : Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, -4)),
-                ],
-              ),
+              decoration: const BoxDecoration(color: Colors.white),
               child: SafeArea(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -303,14 +353,17 @@ class CartScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('الإجمالي',
-                            style: TextStyle(fontSize: 17)),
+                        const Text(
+                          'الإجمالي',
+                          style: TextStyle(fontSize: 17),
+                        ),
                         Text(
                           '${cart.total.toStringAsFixed(0)} ج.م',
                           style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFB07D62)),
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFB07D62),
+                          ),
                         ),
                       ],
                     ),
@@ -321,16 +374,20 @@ class CartScreen extends StatelessWidget {
                         onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const CheckoutScreen()),
+                            builder: (_) => const CheckoutScreen(),
+                          ),
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: const Color(0xFFB07D62),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
-                        child: const Text('إتمام الطلب',
-                            style: TextStyle(fontSize: 16)),
+                        child: const Text(
+                          'إتمام الطلب',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
                     ),
                   ],
@@ -339,26 +396,10 @@ class CartScreen extends StatelessWidget {
             ),
     );
   }
-
-  Widget _qtyBtn(IconData icon, VoidCallback onTap) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: const Color(0xFFB07D62).withOpacity(0.15),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: IconButton(
-        padding: EdgeInsets.zero,
-        onPressed: onTap,
-        icon: Icon(icon, size: 18, color: const Color(0xFFB07D62)),
-      ),
-    );
-  }
 }
 FILE_END
 
-# ============ screens/checkout_screen.dart ============
+# ============ checkout_screen.dart ============
 cat > apps/customer/lib/screens/checkout_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -379,10 +420,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _loading = false;
 
   static const _methods = [
-    {'key': 'vodafone', 'name': 'فودافون كاش', 'icon': '📱', 'enabled': true},
-    {'key': 'etisalat', 'name': 'إتصالات كاش', 'icon': '📱', 'enabled': true},
-    {'key': 'instapay', 'name': 'إنستاباي', 'icon': '💳', 'enabled': false},
-    {'key': 'card', 'name': 'بطاقة بنكية', 'icon': '💳', 'enabled': false},
+    {'key': 'vodafone', 'name': 'فودافون كاش', 'icon': 'VF', 'enabled': true},
+    {'key': 'etisalat', 'name': 'إتصالات كاش', 'icon': 'ET', 'enabled': true},
+    {'key': 'instapay', 'name': 'إنستاباي', 'icon': 'IP', 'enabled': false},
+    {'key': 'card', 'name': 'بطاقة بنكية', 'icon': 'CD', 'enabled': false},
   ];
 
   Future<void> _submit() async {
@@ -396,7 +437,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     try {
       final cart = context.read<CartProvider>();
       final uid = Supabase.instance.client.auth.currentUser!.id;
-      final orderId = DateTime.now().millisecondsSinceEpoch.toString();
 
       await Supabase.instance.client.from('orders').insert({
         'customer_id': uid,
@@ -405,15 +445,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'address': _address.text.trim(),
         'phone': _phone.text.trim(),
       });
-
-      for (final item in cart.items.values) {
-        await Supabase.instance.client.from('order_items').insert({
-          'order_id': orderId,
-          'product_id': item.product.id,
-          'qty': item.quantity,
-          'price': item.product.price,
-        });
-      }
 
       if (!mounted) return;
       cart.clear();
@@ -433,15 +464,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 32),
-            SizedBox(width: 10),
-            Text('تم الطلب'),
-          ],
-        ),
+        title: const Text('تم الطلب'),
         content: const Text(
-            'سيتم التواصل معاك خلال 24 ساعة لتحويل المبلغ وتأكيد الطلب.'),
+          'سيتم التواصل معاك خلال 24 ساعة لتحويل المبلغ وتأكيد الطلب.',
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -469,8 +495,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('بيانات التوصيل',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            'بيانات التوصيل',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 14),
           TextField(
             controller: _address,
@@ -478,7 +506,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             decoration: InputDecoration(
               labelText: 'عنوان التوصيل بالتفصيل',
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               prefixIcon: const Icon(Icons.location_on_outlined),
             ),
           ),
@@ -489,13 +518,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             decoration: InputDecoration(
               labelText: 'رقم الهاتف',
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               prefixIcon: const Icon(Icons.phone_outlined),
             ),
           ),
           const SizedBox(height: 28),
-          const Text('طريقة الدفع',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            'طريقة الدفع',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 14),
           ..._methods.map((m) {
             final enabled = m['enabled'] as bool;
@@ -517,8 +549,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 onTap: enabled
                     ? () => setState(() => _payment = m['key'] as String)
                     : null,
-                leading: Text(m['icon'] as String,
-                    style: const TextStyle(fontSize: 26)),
+                leading: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB07D62).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    m['icon'] as String,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFB07D62),
+                    ),
+                  ),
+                ),
                 title: Text(
                   m['name'] as String,
                   style: TextStyle(
@@ -529,16 +575,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 trailing: !enabled
                     ? Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.orange.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text('قريبًا',
-                            style: TextStyle(
-                                color: Colors.orange,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12)),
+                        child: const Text(
+                          'قريبًا',
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                       )
                     : Radio<String>(
                         value: m['key'] as String,
@@ -560,15 +611,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('الإجمالي',
-                    style: TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text(
+                  'الإجمالي',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 Text(
                   '${total.toStringAsFixed(0)} ج.م',
                   style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFB07D62)),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFB07D62),
+                  ),
                 ),
               ],
             ),
@@ -580,16 +636,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               backgroundColor: const Color(0xFFB07D62),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
             child: _loading
                 ? const SizedBox(
                     height: 22,
                     width: 22,
                     child: CircularProgressIndicator(
-                        color: Colors.white, strokeWidth: 2))
-                : const Text('تأكيد الطلب',
-                    style: TextStyle(fontSize: 16)),
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Text(
+                    'تأكيد الطلب',
+                    style: TextStyle(fontSize: 16),
+                  ),
           ),
           const SizedBox(height: 24),
         ],
@@ -599,7 +661,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 }
 FILE_END
 
-# ============ screens/custom_order_screen.dart ============
+# ============ custom_order_screen.dart ============
 cat > apps/customer/lib/screens/custom_order_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -626,7 +688,7 @@ class _CustomOrderScreenState extends State<CustomOrderScreen> {
     'ليزر وطباعة',
     'ديكور',
     'جلود',
-    'أخرى'
+    'أخرى',
   ];
 
   Future<void> _submit() async {
@@ -649,7 +711,7 @@ class _CustomOrderScreenState extends State<CustomOrderScreen> {
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم إرسال الطلب ✅')),
+        const SnackBar(content: Text('تم إرسال الطلب')),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -694,8 +756,10 @@ class _CustomOrderScreenState extends State<CustomOrderScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          const Text('نوع المنتج',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const Text(
+            'نوع المنتج',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _type,
@@ -705,12 +769,15 @@ class _CustomOrderScreenState extends State<CustomOrderScreen> {
             onChanged: (v) => setState(() => _type = v ?? 'كروشيه'),
             decoration: InputDecoration(
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
           const SizedBox(height: 18),
-          const Text('وصف الطلب *',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const Text(
+            'وصف الطلب *',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           const SizedBox(height: 8),
           TextField(
             controller: _desc,
@@ -718,12 +785,15 @@ class _CustomOrderScreenState extends State<CustomOrderScreen> {
             decoration: InputDecoration(
               hintText: 'مثال: عايز كروشيه بشكل معين، ألوان كذا وكذا...',
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
           const SizedBox(height: 18),
-          const Text('الميزانية المتوقعة',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const Text(
+            'الميزانية المتوقعة',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           const SizedBox(height: 8),
           TextField(
             controller: _budget,
@@ -731,20 +801,24 @@ class _CustomOrderScreenState extends State<CustomOrderScreen> {
             decoration: InputDecoration(
               hintText: 'بالجنيه المصري',
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               prefixIcon: const Icon(Icons.attach_money),
             ),
           ),
           const SizedBox(height: 18),
-          const Text('وقت التسليم المطلوب',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const Text(
+            'وقت التسليم المطلوب',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           const SizedBox(height: 8),
           TextField(
             controller: _time,
             decoration: InputDecoration(
               hintText: 'مثال: خلال أسبوع',
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               prefixIcon: const Icon(Icons.schedule),
             ),
           ),
@@ -755,16 +829,22 @@ class _CustomOrderScreenState extends State<CustomOrderScreen> {
               backgroundColor: const Color(0xFFB07D62),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
             child: _loading
                 ? const SizedBox(
                     height: 22,
                     width: 22,
                     child: CircularProgressIndicator(
-                        color: Colors.white, strokeWidth: 2))
-                : const Text('إرسال الطلب',
-                    style: TextStyle(fontSize: 16)),
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Text(
+                    'إرسال الطلب',
+                    style: TextStyle(fontSize: 16),
+                  ),
           ),
           const SizedBox(height: 24),
         ],
@@ -774,4 +854,4 @@ class _CustomOrderScreenState extends State<CustomOrderScreen> {
 }
 FILE_END
 
-echo "✅ setup-phase1c.sh done"
+echo "setup-phase1c done"
