@@ -1,6 +1,19 @@
 #!/bin/bash
 set -e
 
+# امسح أي حاجة قديمة
+rm -rf apps/customer
+mkdir -p apps/customer/lib/models
+mkdir -p apps/customer/lib/providers
+mkdir -p apps/customer/lib/screens
+
+# إنشاء supabase_config.dart
+cat > apps/customer/lib/supabase_config.dart << 'FILE_END'
+class SupabaseConfig {
+  static const String url = 'https://pqovaolgcjrgjoeqkdlf.supabase.co';
+  static const String anonKey = 'المفتاح_الكامل_هنا';
+}
+FILE_END
 mkdir -p apps/customer/lib/models
 mkdir -p apps/customer/lib/providers
 mkdir -p apps/customer/lib/screens
