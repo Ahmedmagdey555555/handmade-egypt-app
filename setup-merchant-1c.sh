@@ -35,7 +35,7 @@ class _MerchantOrdersScreenState extends State<MerchantOrdersScreen> {
       final data = await Supabase.instance.client
           .from('orders')
           .select()
-          .eq('store_id', _storeId)
+          .eq('store_id', _storeId!)
           .order('created_at', ascending: false);
 
       if (!mounted) return;
