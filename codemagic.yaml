@@ -196,14 +196,14 @@ workflows:
               </queries>
           </manifest>
           MANIFEST_END
+      - name: Install Android SDK
+        script: |
+          export ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
       - name: Set up local.properties
         script: |
           cd apps/merchant/android
           echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
-          - name: Install Android SDK
-  script: |
-    export ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-    "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
       - name: Flutter pub get
         script: |
           cd apps/merchant
