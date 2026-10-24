@@ -128,7 +128,7 @@ workflows:
         notify:
           success: true
           failure: true
-merchant-android:
+merchant-build:
   name: Merchant App - Android
   max_build_duration: 90
   instance_type: mac_mini_m2
