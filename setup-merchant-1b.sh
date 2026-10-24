@@ -87,7 +87,7 @@ class _MerchantProductsScreenState extends State<MerchantProductsScreen> {
       final data = await Supabase.instance.client
           .from('products')
           .select()
-          .eq('store_id', _storeId)
+          .eq('store_id', _storeId!)
           .order('created_at', ascending: false);
 
       if (!mounted) return;
