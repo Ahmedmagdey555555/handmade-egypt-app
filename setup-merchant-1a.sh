@@ -36,7 +36,7 @@ FILE_END
 cat > apps/merchant/lib/supabase_config.dart << 'FILE_END'
 class SupabaseConfig {
   static const String url = 'https://pqovaolgcjrgjoeqkdlf.supabase.co';
-  static const String anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxb3Zhb2xnY2pyZ2pvZXFrZGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwTM1NTYsImV4cCI6MjEwOTk3NTU2fQ.bWKA4foPpi15pw1-Hviutu_9stJctjFJor4xx0ghU90Y';
+  static const String anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxb3Zhb2xnY2pyZ2pvZXFrZGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwTM1NTYsImV4cCI6MjEwNzY2TU1Nn0.PWA4foPpi15pw1-Hviutu_9stJctjFJor4xx0ghU90Y';
 }
 FILE_END
 
