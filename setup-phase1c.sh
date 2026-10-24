@@ -489,19 +489,30 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final uid = Supabase.instance.client.auth.currentUser!.id;
       final delivery = _calculateDelivery(cart.total);
 
-      await Supabase.instance.client.from('orders').insert({
-        'customer_id': uid,
-        'total': cart.total + delivery,
-        'status': 'pending',
-        'address': _address.text.trim(),
-        'phone': _phone.text.trim(),
-        'governorate': _governorate,
-        'delivery_fee': delivery,
-      });
+      final orderData = await Supabase.instance.client.from('orders').insert({
+  'customer_id': uid,
+  'total': cart.total + delivery,
+  'status': 'pending',
+  'address': _address.text.trim(),
+  'phone': _phone.text.trim(),
+  'governorate': _governorate,
+  'delivery_fee': delivery,
+}).select().single();
 
-      if (!mounted) return;
-      cart.clear();
-      _showSuccessDialog();
+final orderId = orderData['id'];
+
+for (final item in cart.items.values) {
+  await Supabase.instance.client.from('order_items').insert({
+    'order_id': orderId,
+    'product_id': item.product.id,
+    'qty': item.quantity,
+    'price': item.product.price,
+  });
+}
+
+if (!mounted) return;
+cart.clear();
+_showSuccessDialog();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
