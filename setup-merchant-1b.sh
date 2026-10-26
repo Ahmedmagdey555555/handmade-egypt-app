@@ -271,7 +271,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
 
       if (_newImage != null) {
         final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-        await Supabase.instance.client.storage.from('products').upload(_newImage!.path, _newImage!);
+await Supabase.instance.client.storage.from('products').upload(fileName, _newImage!);
         imageUrl = Supabase.instance.client.storage.from('products').getPublicUrl(fileName);
       }
 
