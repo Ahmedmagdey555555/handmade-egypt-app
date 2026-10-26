@@ -1,0 +1,6 @@
+{
+  "buildCommand": "bash setup-admin.sh && cd admin && npm install && npm run build",
+  "outputDirectory": "admin/.next",
+  "installCommand": "echo 'No root install needed'",
+  "framework": "nextjs"
+}
