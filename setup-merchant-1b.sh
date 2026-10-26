@@ -256,7 +256,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70, maxWidth: 1080);
     if (picked != null) setState(() => _newImage = File(picked.path));
   }
 
@@ -270,10 +270,10 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
       String? imageUrl = _existingImageUrl;
 
       if (_newImage != null) {
-        final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-await Supabase.instance.client.storage.from('products').upload(fileName, _newImage!);
-        imageUrl = Supabase.instance.client.storage.from('products').getPublicUrl(fileName);
-      }
+  final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+  await Supabase.instance.client.storage.from('products').upload(fileName, _newImage!);
+  imageUrl = Supabase.instance.client.storage.from('products').getPublicUrl(fileName);
+}
 
       final data = {
         'store_id': widget.storeId,
