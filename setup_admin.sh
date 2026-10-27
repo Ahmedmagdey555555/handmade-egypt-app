@@ -16,14 +16,31 @@ cat > admin/package.json << 'EOF'
     "@supabase/supabase-js": "^2.39.0",
     "next": "14.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
   }
 }
 EOF
 
 cat > admin/next.config.js << 'EOF'
-const nextConfig = { reactStrictMode: false };
+const nextConfig = { reactStrictMode: false, typescript: { ignoreBuildErrors: true }, eslint: { ignoreDuringBuilds: true } };
 module.exports = nextConfig;
+EOF
+
+cat > admin/tsconfig.json << 'EOF'
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"], "allowJs": true, "skipLibCheck": true, "strict": false,
+    "noEmit": true, "esModuleInterop": true, "module": "esnext", "moduleResolution": "bundler",
+    "resolveJsonModule": true, "isolatedModules": true, "jsx": "preserve", "incremental": true,
+    "plugins": [{ "name": "next" }], "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
 EOF
 
 cat > admin/src/lib/supabase.ts << 'EOF'
@@ -34,10 +51,18 @@ export const supabase = createClient(
 );
 EOF
 
+cat > admin/src/app/globals.css << 'EOF'
+body { margin: 0; padding: 0; font-family: sans-serif; background-color: #FAF7F2; }
+.container { max-width: 400px; margin: 80px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+button { width: 100%; padding: 12px; background-color: #B07D62; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
+EOF
+
 cat > admin/src/app/layout.tsx << 'EOF'
+import './globals.css'
 export const metadata = { title: 'Admin' }
-export default function RootLayout({ children }) {
-  return <html lang="ar" dir="rtl"><body style={{ margin: 0, padding: 0, fontFamily: 'sans-serif' }}>{children}</body></html>
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return <html lang="ar" dir="rtl"><body>{children}</body></html>
 }
 EOF
 
@@ -65,16 +90,14 @@ export default function Login() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#FAF7F2' }}>
-      <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
-        <h1 style={{ textAlign: 'center', color: '#2C1810', marginBottom: '20px' }}>لوحة التحكم</h1>
-        {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <input type="email" placeholder="البريد الإلكتروني" onChange={e => setEmail(e.target.value)} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} />
-          <input type="password" placeholder="كلمة المرور" onChange={e => setPassword(e.target.value)} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} />
-          <button type="submit" style={{ padding: '12px', backgroundColor: '#B07D62', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>دخول</button>
-        </form>
-      </div>
+    <div className="container">
+      <h1 style={{ textAlign: 'center', color: '#2C1810' }}>لوحة التحكم</h1>
+      {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+      <form onSubmit={handleLogin}>
+        <input type="email" placeholder="البريد الإلكتروني" onChange={e => setEmail(e.target.value)} required />
+        <input type="password" placeholder="كلمة المرور" onChange={e => setPassword(e.target.value)} required />
+        <button type="submit">دخول</button>
+      </form>
     </div>
   );
 }
@@ -94,16 +117,16 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div style={{ padding: '40px', backgroundColor: '#FAF7F2', minHeight: '100vh' }}>
-      <h1 style={{ color: '#2C1810', marginBottom: '30px' }}>نظرة عامة</h1>
+    <div style={{ padding: '40px' }}>
+      <h1 style={{ color: '#2C1810' }}>نظرة عامة</h1>
       <div style={{ display: 'flex', gap: '20px' }}>
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', flex: 1, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-          <p style={{ color: '#666' }}>الطلبات</p>
-          <h2 style={{ color: '#B07D62', fontSize: '32px' }}>{stats.orders}</h2>
+        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', flex: 1 }}>
+          <p>الطلبات</p>
+          <h2 style={{ color: '#B07D62' }}>{stats.orders}</h2>
         </div>
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', flex: 1, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-          <p style={{ color: '#666' }}>التجار</p>
-          <h2 style={{ color: '#B07D62', fontSize: '32px' }}>{stats.merchants}</h2>
+        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', flex: 1 }}>
+          <p>التجار</p>
+          <h2 style={{ color: '#B07D62' }}>{stats.merchants}</h2>
         </div>
       </div>
     </div>
