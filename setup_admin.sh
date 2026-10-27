@@ -106,7 +106,6 @@ FILE_END
 cat > admin/src/lib/supabase.ts << 'FILE_END'
 import { createClient } from '@supabase/supabase-js';
 
-// سيتم وضع المفاتيح هنا كـ Environment Variables في Vercel
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
@@ -152,7 +151,7 @@ FILE_END
 cat > admin/src/app/page.tsx << 'FILE_END'
 'use client';
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -175,7 +174,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Check if user is admin
     const { data: roleData } = await supabase.from('user_roles').select('role').eq('id', data.user.id).single();
     
     if (roleData?.role !== 'admin') {
@@ -240,7 +238,7 @@ FILE_END
 cat > admin/src/app/dashboard/layout.tsx << 'FILE_END'
 'use client';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutDashboard, ShoppingBag, Users, Store, MessageSquare, Settings, LogOut, FileEdit } from 'lucide-react';
@@ -281,7 +279,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex h-screen bg-cream">
-      {/* Sidebar */}
       <aside className="w-64 bg-dark text-white flex flex-col">
         <div className="p-6 text-center border-b border-gray-700">
           <h1 className="text-2xl font-bold text-brand">Handmade</h1>
@@ -307,7 +304,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-8">
         {children}
       </main>
@@ -320,7 +316,7 @@ FILE_END
 cat > admin/src/app/dashboard/page.tsx << 'FILE_END'
 'use client';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { ShoppingBag, Users, Store, DollarSign } from 'lucide-react';
 
 export default function DashboardHome() {
