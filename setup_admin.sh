@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# امسح أي مجلد قديم عشان نضمن نظافة البناء
+rm -rf admin
+
 mkdir -p admin/src/app/dashboard
 mkdir -p admin/src/lib
 
@@ -51,8 +54,9 @@ export const supabase = createClient(
 );
 EOF
 
+# تصميمات CSS عادية جداً بدون أي Tailwind
 cat > admin/src/app/globals.css << 'EOF'
-body { margin: 0; padding: 0; font-family: sans-serif; background-color: #FAF7F2; }
+body { margin: 0; padding: 0; font-family: sans-serif; background-color: #FAF7F2; color: #2C1810; }
 .container { max-width: 400px; margin: 80px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
 button { width: 100%; padding: 12px; background-color: #B07D62; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
@@ -91,7 +95,7 @@ export default function Login() {
 
   return (
     <div className="container">
-      <h1 style={{ textAlign: 'center', color: '#2C1810' }}>لوحة التحكم</h1>
+      <h1 style={{ textAlign: 'center' }}>لوحة التحكم</h1>
       {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
       <form onSubmit={handleLogin}>
         <input type="email" placeholder="البريد الإلكتروني" onChange={e => setEmail(e.target.value)} required />
@@ -118,7 +122,7 @@ export default function Dashboard() {
 
   return (
     <div style={{ padding: '40px' }}>
-      <h1 style={{ color: '#2C1810' }}>نظرة عامة</h1>
+      <h1>نظرة عامة</h1>
       <div style={{ display: 'flex', gap: '20px' }}>
         <div style={{ background: 'white', padding: '20px', borderRadius: '8px', flex: 1 }}>
           <p>الطلبات</p>
