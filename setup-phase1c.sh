@@ -491,6 +491,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       final orderData = await Supabase.instance.client.from('orders').insert({
   'customer_id': uid,
+  store_id': cart.items.values.first.product.storeId, // 
   'total': cart.total + delivery,
   'status': 'pending',
   'address': _address.text.trim(),
