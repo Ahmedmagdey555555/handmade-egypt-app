@@ -14,51 +14,16 @@ cat > admin/package.json << 'EOF'
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
-    "lucide-react": "^0.344.0",
     "next": "14.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "typescript": "^5.3.3",
-    "@types/node": "^20.11.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "autoprefixer": "^10.4.17",
-    "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1"
+    "react-dom": "^18.2.0"
   }
 }
 EOF
 
-cat > admin/next.config.mjs << 'EOF'
-const nextConfig = { reactStrictMode: false, typescript: { ignoreBuildErrors: true }, eslint: { ignoreDuringBuilds: true } };
-export default nextConfig;
-EOF
-
-cat > admin/postcss.config.mjs << 'EOF'
-export default { plugins: { tailwindcss: {}, autoprefixer: {} } };
-EOF
-
-cat > admin/tailwind.config.js << 'EOF'
-module.exports = {
-  content: ["./src/app/**/*.{js,ts,jsx,tsx,mdx}"],
-  theme: { extend: { colors: { brand: '#B07D62', dark: '#2C1810', cream: '#FAF7F2' } } },
-  plugins: [],
-};
-EOF
-
-cat > admin/tsconfig.json << 'EOF'
-{
-  "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"], "allowJs": true, "skipLibCheck": true, "strict": true,
-    "noEmit": true, "esModuleInterop": true, "module": "esnext", "moduleResolution": "bundler",
-    "resolveJsonModule": true, "isolatedModules": true, "jsx": "preserve", "incremental": true,
-    "plugins": [{ "name": "next" }], "paths": { "@/*": ["./src/*"] }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
-}
+cat > admin/next.config.js << 'EOF'
+const nextConfig = { reactStrictMode: false };
+module.exports = nextConfig;
 EOF
 
 cat > admin/src/lib/supabase.ts << 'EOF'
@@ -69,18 +34,10 @@ export const supabase = createClient(
 );
 EOF
 
-cat > admin/src/app/globals.css << 'EOF'
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-body { background-color: #FAF7F2; color: #2C1810; }
-EOF
-
 cat > admin/src/app/layout.tsx << 'EOF'
-import './globals.css'
-export const metadata = { title: 'Handmade Admin' }
+export const metadata = { title: 'Admin' }
 export default function RootLayout({ children }) {
-  return <html lang="ar" dir="rtl"><body>{children}</body></html>
+  return <html lang="ar" dir="rtl"><body style={{ margin: 0, padding: 0, fontFamily: 'sans-serif' }}>{children}</body></html>
 }
 EOF
 
@@ -96,7 +53,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return setError('خطأ في البيانات');
@@ -108,14 +65,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">لوحة التحكم</h1>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input type="email" placeholder="البريد الإلكتروني" onChange={e => setEmail(e.target.value)} className="w-full border p-3 rounded-lg" required />
-          <input type="password" placeholder="كلمة المرور" onChange={e => setPassword(e.target.value)} className="w-full border p-3 rounded-lg" required />
-          <button type="submit" className="w-full bg-brand text-white font-bold py-3 rounded-lg">دخول</button>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#FAF7F2' }}>
+      <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
+        <h1 style={{ textAlign: 'center', color: '#2C1810', marginBottom: '20px' }}>لوحة التحكم</h1>
+        {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <input type="email" placeholder="البريد الإلكتروني" onChange={e => setEmail(e.target.value)} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} />
+          <input type="password" placeholder="كلمة المرور" onChange={e => setPassword(e.target.value)} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} />
+          <button type="submit" style={{ padding: '12px', backgroundColor: '#B07D62', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>دخول</button>
         </form>
       </div>
     </div>
@@ -137,16 +94,16 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-8">نظرة عامة</h1>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <p className="text-gray-500">الطلبات</p>
-          <p className="text-3xl font-bold">{stats.orders}</p>
+    <div style={{ padding: '40px', backgroundColor: '#FAF7F2', minHeight: '100vh' }}>
+      <h1 style={{ color: '#2C1810', marginBottom: '30px' }}>نظرة عامة</h1>
+      <div style={{ display: 'flex', gap: '20px' }}>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', flex: 1, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+          <p style={{ color: '#666' }}>الطلبات</p>
+          <h2 style={{ color: '#B07D62', fontSize: '32px' }}>{stats.orders}</h2>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <p className="text-gray-500">التجار</p>
-          <p className="text-3xl font-bold">{stats.merchants}</p>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', flex: 1, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+          <p style={{ color: '#666' }}>التجار</p>
+          <h2 style={{ color: '#B07D62', fontSize: '32px' }}>{stats.merchants}</h2>
         </div>
       </div>
     </div>
