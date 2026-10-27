@@ -42,6 +42,7 @@ const nextConfig = {
   reactStrictMode: false,
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  distDir: '../.next',
 };
 export default nextConfig;
 FILE_END
