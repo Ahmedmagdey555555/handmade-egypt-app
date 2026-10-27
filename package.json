@@ -2,8 +2,7 @@
   "name": "handmade-root",
   "version": "1.0.0",
   "scripts": {
-    "postinstall": "bash setup-admin.sh && cd admin && npm install",
-    "build": "cd admin && npm run build"
+    "build": "bash setup-admin.sh && cd admin && npm install && npm run build"
   },
   "dependencies": {
     "next": "14.1.0",
