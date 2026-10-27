@@ -1,3 +1,0 @@
-{
-  "buildCommand": "bash setup_admin.sh && cd admin && npm install && npm run build"
-}
