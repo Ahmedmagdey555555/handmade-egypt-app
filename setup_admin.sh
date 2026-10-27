@@ -21,16 +21,16 @@ cat > admin/package.json << 'FILE_END'
     "lucide-react": "^0.344.0",
     "next": "14.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
+    "react-dom": "^18.2.0",
+    "typescript": "^5.3.3",
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
+  },
+  "devDependencies": {
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.3.3"
+    "tailwindcss": "^3.4.1"
   }
 }
 FILE_END
@@ -40,25 +40,19 @@ cat > admin/next.config.mjs << 'FILE_END'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: true },
 };
 export default nextConfig;
 FILE_END
 
-# ============ tailwind.config.ts ============
-cat > admin/tailwind.config.ts << 'FILE_END'
-import type { Config } from "tailwindcss";
-
-const config: Config = {
+# ============ tailwind.config.js (تم تغيير الامتداد) ============
+cat > admin/tailwind.config.js << 'FILE_END'
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -71,12 +65,11 @@ const config: Config = {
   },
   plugins: [],
 };
-export default config;
 FILE_END
 
-# ============ postcss.config.mjs ============
-cat > admin/postcss.config.mjs << 'FILE_END'
-export default {
+# ============ postcss.config.js (تم تغيير الامتداد) ============
+cat > admin/postcss.config.js << 'FILE_END'
+module.exports = {
   plugins: {
     tailwindcss: {},
     autoprefixer: {},
@@ -247,7 +240,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, ShoppingBag, Users, Store, MessageSquare, Settings, LogOut, FileEdit } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Users, Store, Settings, LogOut, FileEdit } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
