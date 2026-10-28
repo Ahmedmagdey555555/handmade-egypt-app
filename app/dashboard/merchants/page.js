@@ -7,48 +7,50 @@ export default function MerchantsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMerchants = async () => {
-      const { data, error } = await supabase.from('stores').select('*').order('created_at', { ascending: false });
-      if (!error) setMerchants(data || []);
-      setLoading(false);
-    };
     fetchMerchants();
   }, []);
+
+  const fetchMerchants = async () => {
+    const { data } = await supabase.from('stores').select('*').order('created_at', { ascending: false });
+    setMerchants(data || []);
+    setLoading(false);
+  };
+
+  const updateStatus = async (id, status) => {
+    await supabase.from('stores').update({ status }).eq('id', id);
+    fetchMerchants();
+  };
 
   if (loading) return <div style={{ padding: '40px' }}>جاري التحميل...</div>;
 
   return (
     <div style={{ padding: '40px' }}>
-      <h1 style={{ marginBottom: '30px' }}>التجار (المتاجر)</h1>
-      
-      <div style={{ background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead style={{ background: '#f5f5f5', borderBottom: '1px solid #ddd' }}>
-            <tr>
-              <th style={{ padding: '15px', textAlign: 'right' }}>اسم المتجر</th>
-              <th style={{ padding: '15px', textAlign: 'right' }}>رقم الهاتف</th>
-              <th style={{ padding: '15px', textAlign: 'right' }}>حالة المتجر</th>
-              <th style={{ padding: '15px', textAlign: 'right' }}>تاريخ الانضمام</th>
-            </tr>
-          </thead>
-          <tbody>
-            {merchants.length === 0 ? (
-              <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}>لا يوجد تجار مسجلين</td></tr>
-            ) : merchants.map(m => (
-              <tr key={m.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '15px', fontWeight: 'bold' }}>{m.name}</td>
-                <td style={{ padding: '15px' }}>{m.phone || '-'}</td>
-                <td style={{ padding: '15px' }}>
-                  <span style={{ padding: '5px 10px', backgroundColor: m.status === 'active' ? '#e8f5e9' : '#fff3e0', color: m.status === 'active' ? 'green' : 'orange', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
-                    {m.status === 'active' ? 'نشط' : 'قيد المراجعة'}
-                  </span>
-                </td>
-                <td style={{ padding: '15px', direction: 'ltr', textAlign: 'right' }}>{new Date(m.created_at).toLocaleDateString('ar-EG')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <h1 style={{ marginBottom: '30px' }}>إدارة التجار</h1>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        {merchants.map(m => (
+          <div key={m.id} style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ margin: '0 0 10px 0' }}>{m.name}</h3>
+              <p style={{ margin: '5px 0' }}><strong>الهاتف:</strong> {m.phone || '-'}</p>
+              <p style={{ margin: '5px 0' }}><strong>بطاقة الهوية:</strong> {m.id_card_number || 'لم يتم إدخالها'}</p>
+              <p style={{ margin: '5px 0' }}>
+                <strong>الحالة:</strong> 
+                <span style={{ marginRight: '5px', color: m.status === 'active' ? 'green' : 'orange', fontWeight: 'bold' }}>
+                  {m.status === 'active' ? 'نشط' : 'قيد المراجعة'}
+                </span>
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {m.status !== 'active' && (
+                <button onClick={() => updateStatus(m.id, 'active')} style={{ background: '#e8f5e9', color: 'green', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>موافقة</button>
+              )}
+              {m.status === 'active' && (
+                <button onClick={() => updateStatus(m.id, 'pending')} style={{ background: '#ffebee', color: 'red', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>إيقاف</button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
-    }
+}
