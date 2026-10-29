@@ -210,7 +210,7 @@ class _MainScreenState extends State<MainScreen> {
 }
 FILE_END
 
-# ============ screens/home_screen.dart ============
+// ============ screens/home_screen.dart ============
 cat > apps/customer/lib/screens/home_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -251,11 +251,14 @@ class _HomeScreenState extends State<HomeScreen> {
         _sb.from('ads').select().eq('is_active', true),
       ]);
       if (!mounted) return;
+      
+      // فلترة المنتجات اللي ليها مخزون في المركز أو عند التاجر
+      final rawProducts = (results[0] as List).map((e) => Product.fromMap(e)).toList();
+      final availableProducts = rawProducts.where((p) => (p.hubStock + p.stock) > 0).toList();
+
       setState(() {
-        _products =
-            (results[0] as List).map((e) => Product.fromMap(e)).toList();
-        _categories =
-            (results[1] as List).map((e) => Category.fromMap(e)).toList();
+        _products = availableProducts;
+        _categories = (results[1] as List).map((e) => Category.fromMap(e)).toList();
         _ads = (results[2] as List).map((e) => Ad.fromMap(e)).toList();
         _loading = false;
       });
@@ -270,16 +273,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const CustomOrderScreen()),
-        ),
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomOrderScreen())),
         backgroundColor: const Color(0xFFB07D62),
         icon: const Icon(Icons.edit_note, color: Colors.white),
-        label: const Text(
-          'اطلب طلب خاص',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        label: const Text('اطلب طلب خاص', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -292,34 +289,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                         child: GestureDetector(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const SearchScreen()),
-                          ),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen())),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
                             child: Row(
                               children: [
-                                Icon(
-                                  Icons.search,
-                                  color: Colors.grey.shade500,
-                                ),
+                                Icon(Icons.search, color: Colors.grey.shade500),
                                 const SizedBox(width: 10),
-                                Text(
-                                  'ابحث عن منتج...',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade500,
-                                    fontSize: 15,
-                                  ),
-                                ),
+                                Text('ابحث عن منتج...', style: TextStyle(color: Colors.grey.shade500, fontSize: 15)),
                               ],
                             ),
                           ),
@@ -344,10 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                     child: ad.imageUrl == null
                                         ? Container(color: Colors.grey.shade300)
-                                        : CachedNetworkImage(
-                                            imageUrl: ad.imageUrl!,
-                                            fit: BoxFit.cover,
-                                          ),
+                                        : CachedNetworkImage(imageUrl: ad.imageUrl!, fit: BoxFit.cover),
                                   ),
                                 );
                               },
@@ -355,97 +330,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
-                      SliverToBoxAdapter(
-  child: Padding(
-    padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        height: 130,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFFB07D62),
-              Color(0xFF8B5A3C),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                  mainAxisAlignment:
-                      MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'خصم يصل إلى',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      '50%',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius:
-                            BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        'اطلب الآن',
-                        style: TextStyle(
-                          color: Color(0xFFB07D62),
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.local_offer,
-                size: 80,
-                color: Colors.white24,
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  ),
-),
                     const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
-                        child: Text(
-                          'الأقسام',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2C1810),
-                          ),
-                        ),
+                        child: Text('الأقسام', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2C1810))),
                       ),
                     ),
                     SliverToBoxAdapter(
@@ -458,44 +346,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           itemBuilder: (c, i) {
                             final cat = _categories[i];
                             return GestureDetector(
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      CategoryProductsScreen(category: cat),
-                                ),
-                              ),
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CategoryProductsScreen(category: cat))),
                               child: Container(
                                 width: 90,
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
                                 child: Column(
                                   children: [
                                     Container(
-                                      width: 66,
-                                      height: 66,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
+                                      width: 66, height: 66,
+                                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
                                       alignment: Alignment.center,
-                                      child: Text(
-                                        cat.icon ?? '?',
-                                        style: const TextStyle(fontSize: 30),
-                                      ),
+                                      child: Text(cat.icon ?? '?', style: const TextStyle(fontSize: 30)),
                                     ),
                                     const SizedBox(height: 8),
-                                    Text(
-                                      cat.name,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                    Text(cat.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
                                   ],
                                 ),
                               ),
@@ -504,169 +368,44 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    SliverToBoxAdapter(
-  child: Padding(
-    padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        height: 130,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFFB07D62),
-              Color(0xFF8B5A3C),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                  mainAxisAlignment:
-                      MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'خصم يصل إلى',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      '50%',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius:
-                            BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        'اطلب الآن',
-                        style: TextStyle(
-                          color: Color(0xFFB07D62),
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.local_offer,
-                size: 80,
-                color: Colors.white24,
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  ),
-),
                     const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
-                        child: Text(
-                          'المنتجات',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2C1810),
-                          ),
-                        ),
+                        child: Text('المنتجات', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2C1810))),
                       ),
                     ),
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                       sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.72,
-                        ),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.72),
                         delegate: SliverChildBuilderDelegate(
                           (c, i) {
                             final p = _products[i];
                             return GestureDetector(
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      ProductDetailScreen(product: p),
-                                ),
-                              ),
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: p))),
                               child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
+                                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
                                       child: ClipRRect(
-                                        borderRadius:
-                                            const BorderRadius.vertical(
-                                          top: Radius.circular(14),
-                                        ),
+                                        borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
                                         child: p.imageUrl == null
-                                            ? Container(
-                                                color: Colors.grey.shade200,
-                                              )
-                                            : CachedNetworkImage(
-                                                imageUrl: p.imageUrl!,
-                                                fit: BoxFit.cover,
-                                                width: double.infinity,
-                                              ),
+                                            ? Container(color: Colors.grey.shade200)
+                                            : CachedNetworkImage(imageUrl: p.imageUrl!, fit: BoxFit.cover, width: double.infinity),
                                       ),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.all(10),
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            p.title,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-                                          ),
+                                          Text(p.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                                           const SizedBox(height: 4),
-                                          Text(
-                                            '${p.price.toStringAsFixed(0)} ج.م',
-                                            style: const TextStyle(
-                                              color: Color(0xFFB07D62),
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15,
-                                            ),
-                                          ),
+                                          Text('${p.price.toStringAsFixed(0)} ج.م', style: const TextStyle(color: Color(0xFFB07D62), fontWeight: FontWeight.bold, fontSize: 15)),
+                                          if ((p.hubStock + p.stock) <= 5)
+                                            Text('باقي ${p.hubStock + p.stock} قطع', style: const TextStyle(color: Colors.red, fontSize: 11)),
                                         ],
                                       ),
                                     ),
