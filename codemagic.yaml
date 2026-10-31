@@ -46,9 +46,17 @@ workflows:
       - name: Fix Android SDK Version
         script: |
           cd apps/customer/android/app
-          sed -i.bak 's/compileSdkVersion .*/compileSdkVersion 34/' build.gradle
-          sed -i.bak 's/targetSdkVersion .*/targetSdkVersion 34/' build.gradle
-          sed -i.bak 's/minSdkVersion .*/minSdkVersion 21/' build.gradle
+          if [ -f build.gradle ]; then
+            sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' build.gradle
+            sed -i 's/targetSdkVersion .*/targetSdkVersion 34/' build.gradle
+            sed -i 's/minSdkVersion .*/minSdkVersion 21/' build.gradle
+            echo "Fixed Groovy build.gradle"
+          elif [ -f build.gradle.kts ]; then
+            sed -i 's/compileSdk = .*/compileSdk = 34/' build.gradle.kts
+            sed -i 's/targetSdk = .*/targetSdk = 34/' build.gradle.kts
+            sed -i 's/minSdk = .*/minSdk = 21/' build.gradle.kts
+            echo "Fixed Kotlin build.gradle.kts"
+          fi
       - name: Write AndroidManifest with INTERNET
         script: |
           cd apps/customer/android/app/src/main
@@ -182,9 +190,17 @@ workflows:
       - name: Fix Android SDK Version
         script: |
           cd apps/merchant/android/app
-          sed -i.bak 's/compileSdkVersion .*/compileSdkVersion 34/' build.gradle
-          sed -i.bak 's/targetSdkVersion .*/targetSdkVersion 34/' build.gradle
-          sed -i.bak 's/minSdkVersion .*/minSdkVersion 21/' build.gradle
+          if [ -f build.gradle ]; then
+            sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' build.gradle
+            sed -i 's/targetSdkVersion .*/targetSdkVersion 34/' build.gradle
+            sed -i 's/minSdkVersion .*/minSdkVersion 21/' build.gradle
+            echo "Fixed Groovy build.gradle"
+          elif [ -f build.gradle.kts ]; then
+            sed -i 's/compileSdk = .*/compileSdk = 34/' build.gradle.kts
+            sed -i 's/targetSdk = .*/targetSdk = 34/' build.gradle.kts
+            sed -i 's/minSdk = .*/minSdk = 21/' build.gradle.kts
+            echo "Fixed Kotlin build.gradle.kts"
+          fi
       - name: Write AndroidManifest
         script: |
           cd apps/merchant/android/app/src/main
