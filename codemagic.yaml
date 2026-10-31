@@ -43,43 +43,23 @@ workflows:
         script: |
           cd apps/customer
           flutter create --platforms=android --org com.handmade --project-name customer_app .
-      - name: Fix Android Build Configuration
+      - name: Force SDK 34
         script: |
-          cd apps/customer/android/app
-          cat > build.gradle << 'EOF'
-          plugins {
-              id "com.android.application"
-              id "kotlin-android"
-              id "dev.flutter.flutter-gradle-plugin"
-          }
-          android {
-              namespace = "com.handmade.customer_app"
-              compileSdk = 34
-              ndkVersion = flutter.ndkVersion
-              compileOptions {
-                  sourceCompatibility = JavaVersion.VERSION_17
-                  targetCompatibility = JavaVersion.VERSION_17
-              }
-              kotlinOptions {
-                  jvmTarget = "17"
-              }
-              defaultConfig {
-                  applicationId = "com.handmade.customer_app"
-                  minSdk = 21
-                  targetSdk = 34
-                  versionCode = flutter.versionCode
-                  versionName = flutter.versionName
-              }
-              buildTypes {
-                  release {
-                      signingConfig = signingConfigs.debug
-                  }
-              }
-          }
-          flutter {
-              source = "../.."
-          }
-          EOF
+          cd apps/customer/android
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" >> local.properties
+          
+          if [ -f app/build.gradle ]; then
+            sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' app/build.gradle
+            sed -i 's/targetSdkVersion .*/targetSdkVersion 34/' app/build.gradle
+            sed -i 's/minSdkVersion .*/minSdkVersion 21/' app/build.gradle
+          fi
+          
+          if [ -f app/build.gradle.kts ]; then
+            sed -i 's/compileSdk = .*/compileSdk = 34/' app/build.gradle.kts
+            sed -i 's/targetSdk = .*/targetSdk = 34/' app/build.gradle.kts
+            sed -i 's/minSdk = .*/minSdk = 21/' app/build.gradle.kts
+          fi
       - name: Write AndroidManifest with INTERNET
         script: |
           cd apps/customer/android/app/src/main
@@ -134,11 +114,10 @@ workflows:
           cd apps/customer
           pip3 install cairosvg --quiet
           python3 -c "import cairosvg; cairosvg.svg2png(url='assets/icon.svg', write_to='assets/icon.png', output_width=1024, output_height=1024)"
-          ls -la assets/
-      - name: Set up local.properties
+      - name: Flutter Clean
         script: |
-          cd apps/customer/android
-          echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
+          cd apps/customer
+          flutter clean
       - name: Flutter pub get
         script: |
           cd apps/customer
@@ -210,43 +189,23 @@ workflows:
         script: |
           cd apps/merchant
           flutter create --platforms=android --org com.handmade --project-name merchant_app .
-      - name: Fix Android Build Configuration
+      - name: Force SDK 34
         script: |
-          cd apps/merchant/android/app
-          cat > build.gradle << 'EOF'
-          plugins {
-              id "com.android.application"
-              id "kotlin-android"
-              id "dev.flutter.flutter-gradle-plugin"
-          }
-          android {
-              namespace = "com.handmade.merchant_app"
-              compileSdk = 34
-              ndkVersion = flutter.ndkVersion
-              compileOptions {
-                  sourceCompatibility = JavaVersion.VERSION_17
-                  targetCompatibility = JavaVersion.VERSION_17
-              }
-              kotlinOptions {
-                  jvmTarget = "17"
-              }
-              defaultConfig {
-                  applicationId = "com.handmade.merchant_app"
-                  minSdk = 21
-                  targetSdk = 34
-                  versionCode = flutter.versionCode
-                  versionName = flutter.versionName
-              }
-              buildTypes {
-                  release {
-                      signingConfig = signingConfigs.debug
-                  }
-              }
-          }
-          flutter {
-              source = "../.."
-          }
-          EOF
+          cd apps/merchant/android
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" >> local.properties
+          
+          if [ -f app/build.gradle ]; then
+            sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' app/build.gradle
+            sed -i 's/targetSdkVersion .*/targetSdkVersion 34/' app/build.gradle
+            sed -i 's/minSdkVersion .*/minSdkVersion 21/' app/build.gradle
+          fi
+          
+          if [ -f app/build.gradle.kts ]; then
+            sed -i 's/compileSdk = .*/compileSdk = 34/' app/build.gradle.kts
+            sed -i 's/targetSdk = .*/targetSdk = 34/' app/build.gradle.kts
+            sed -i 's/minSdk = .*/minSdk = 21/' app/build.gradle.kts
+          fi
       - name: Write AndroidManifest
         script: |
           cd apps/merchant/android/app/src/main
@@ -286,10 +245,14 @@ workflows:
               </queries>
           </manifest>
           MANIFEST_END
-      - name: Set up local.properties
+      - name: Install Android SDK
         script: |
-          cd apps/merchant/android
-          echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
+          export ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Flutter Clean
+        script: |
+          cd apps/merchant
+          flutter clean
       - name: Flutter pub get
         script: |
           cd apps/merchant
