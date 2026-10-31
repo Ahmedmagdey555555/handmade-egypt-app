@@ -43,6 +43,12 @@ workflows:
         script: |
           cd apps/customer
           flutter create --platforms=android --org com.handmade --project-name customer_app .
+      - name: Fix Android SDK Version
+        script: |
+          cd apps/customer/android/app
+          sed -i.bak 's/compileSdkVersion .*/compileSdkVersion 34/' build.gradle
+          sed -i.bak 's/targetSdkVersion .*/targetSdkVersion 34/' build.gradle
+          sed -i.bak 's/minSdkVersion .*/minSdkVersion 21/' build.gradle
       - name: Write AndroidManifest with INTERNET
         script: |
           cd apps/customer/android/app/src/main
@@ -173,6 +179,12 @@ workflows:
         script: |
           cd apps/merchant
           flutter create --platforms=android --org com.handmade --project-name merchant_app .
+      - name: Fix Android SDK Version
+        script: |
+          cd apps/merchant/android/app
+          sed -i.bak 's/compileSdkVersion .*/compileSdkVersion 34/' build.gradle
+          sed -i.bak 's/targetSdkVersion .*/targetSdkVersion 34/' build.gradle
+          sed -i.bak 's/minSdkVersion .*/minSdkVersion 21/' build.gradle
       - name: Write AndroidManifest
         script: |
           cd apps/merchant/android/app/src/main
