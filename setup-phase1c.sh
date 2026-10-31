@@ -399,7 +399,7 @@ class CartScreen extends StatelessWidget {
 }
 FILE_END
 
-// ============ checkout_screen.dart ============
+# ============ checkout_screen.dart ============
 cat > apps/customer/lib/screens/checkout_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
