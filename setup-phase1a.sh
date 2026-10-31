@@ -143,6 +143,8 @@ class Product {
   final String? storeId;
   final String? categoryId;
   final String? warranty;
+  final int stock;
+  final int hubStock;
 
   Product({
     required this.id,
@@ -153,6 +155,8 @@ class Product {
     this.storeId,
     this.categoryId,
     this.warranty,
+    this.stock = 0,
+    this.hubStock = 0,
   });
 
   factory Product.fromMap(Map<String, dynamic> m) => Product(
@@ -164,6 +168,8 @@ class Product {
         storeId: m['store_id'] as String?,
         categoryId: m['category_id'] as String?,
         warranty: m['warranty'] as String?,
+        stock: m['stock'] ?? 0,
+        hubStock: m['hub_stock'] ?? 0,
       );
 }
 FILE_END
