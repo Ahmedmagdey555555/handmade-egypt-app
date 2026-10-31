@@ -210,7 +210,7 @@ class _MainScreenState extends State<MainScreen> {
 }
 FILE_END
 
-// ============ screens/home_screen.dart ============
+# ============ screens/home_screen.dart ============
 cat > apps/customer/lib/screens/home_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
