@@ -54,7 +54,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-    geolocator: ^11.0.0
+  geolocator: ^11.0.0
   geocoding: ^3.0.0
   cupertino_icons: ^1.0.6
   supabase_flutter: ^2.5.6
