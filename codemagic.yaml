@@ -43,20 +43,49 @@ workflows:
         script: |
           cd apps/customer
           flutter create --platforms=android --org com.handmade --project-name customer_app .
-      - name: Fix Android SDK Version
-        script: |
-          cd apps/customer/android/app
-          if [ -f build.gradle ]; then
-            sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' build.gradle
-            sed -i 's/targetSdkVersion .*/targetSdkVersion 34/' build.gradle
-            sed -i 's/minSdkVersion .*/minSdkVersion 21/' build.gradle
-            echo "Fixed Groovy build.gradle"
-          elif [ -f build.gradle.kts ]; then
-            sed -i 's/compileSdk = .*/compileSdk = 34/' build.gradle.kts
-            sed -i 's/targetSdk = .*/targetSdk = 34/' build.gradle.kts
-            sed -i 's/minSdk = .*/minSdk = 21/' build.gradle.kts
-            echo "Fixed Kotlin build.gradle.kts"
-          fi
+      - name: Fix Android Build Configuration
+  script: |
+    cd apps/customer/android/app
+    cat > build.gradle << 'EOF'
+    plugins {
+        id "com.android.application"
+        id "kotlin-android"
+        id "dev.flutter.flutter-gradle-plugin"
+    }
+
+    android {
+        namespace = "com.handmade.customer_app"
+        compileSdk = 34
+        ndkVersion = flutter.ndkVersion
+
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+
+        kotlinOptions {
+            jvmTarget = "17"
+        }
+
+        defaultConfig {
+            applicationId = "com.handmade.customer_app"
+            minSdk = 21
+            targetSdk = 34
+            versionCode = flutter.versionCode
+            versionName = flutter.versionName
+        }
+
+        buildTypes {
+            release {
+                signingConfig = signingConfigs.debug
+            }
+        }
+    }
+
+    flutter {
+        source = "../.."
+    }
+    EOF
       - name: Write AndroidManifest with INTERNET
         script: |
           cd apps/customer/android/app/src/main
