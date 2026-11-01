@@ -65,6 +65,8 @@ dependencies:
   geocoding: ^3.0.0
   image_picker: ^1.0.7
 
+dependency_overrides:
+  geocoding_android: ^4.0.0
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
 
