@@ -364,7 +364,7 @@ class CartScreen extends StatelessWidget {
 }
 FILE_END
 
-# ============ 5. صفحة الدفع (خيار الهدية) ============
+# ============ 5. صفحة الدفع (خيار الهدية + رسوم التغليف) ============
 cat > apps/customer/lib/screens/checkout_screen.dart << 'FILE_END'
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -389,7 +389,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _landmark = TextEditingController();
   final _phone = TextEditingController();
   final _couponCode = TextEditingController();
-  final _giftMessage = TextEditingController(); // رسالة الهدية
+  final _giftMessage = TextEditingController(); 
   
   String _payment = 'vodafone';
   String? _governorate;
@@ -397,7 +397,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   double _freeAbove = 750;
   bool _loading = false;
   bool _fetchingLocation = true;
-  bool _isGift = false; // هل الطلب هدية؟
+  
+  bool _isGift = false; 
+  final double _giftFee = 20.0; // سعر تغليف الهدية (ممكن تغيره هنا)
   
   double _walletBalance = 0;
   bool _useWallet = false;
@@ -521,8 +523,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final cart = context.read<CartProvider>();
       final uid = Supabase.instance.client.auth.currentUser!.id;
       final delivery = _calculateDelivery(cart.total);
-      final walletUsed = _useWallet ? (_walletBalance > (cart.total + delivery - _discount) ? (cart.total + delivery - _discount) : _walletBalance) : 0;
-      final finalTotal = cart.total + delivery - _discount - walletUsed;
+      final currentGiftFee = _isGift ? _giftFee : 0.0;
+      
+      final walletUsed = _useWallet ? (_walletBalance > (cart.total + delivery + currentGiftFee - _discount) ? (cart.total + delivery + currentGiftFee - _discount) : _walletBalance) : 0;
+      final finalTotal = cart.total + delivery + currentGiftFee - _discount - walletUsed;
 
       String? receiptUrl;
       if (_receiptImage != null) {
@@ -543,15 +547,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'building_no': _building.text.trim(), 'apartment_no': _apartment.text.trim(), 'landmark': _landmark.text.trim(),
         'receipt_image_url': receiptUrl, 'payment_method': _payment,
         'is_gift': _isGift, 'gift_message': _isGift ? _giftMessage.text.trim() : null,
+        'gift_fee': currentGiftFee, // حفظ رسوم الهدية
       }).select().single();
 
       for (final item in cart.items.values) {
         await Supabase.instance.client.from('order_items').insert({
-          'order_id': orderData['id'], 
-          'product_id': item.product.id, 
-          'qty': item.quantity, 
-          'price': item.product.price,
-          // ممكن نضيف الخيارات لو حابب نوسع الجدول بعدين
+          'order_id': orderData['id'], 'product_id': item.product.id, 'qty': item.quantity, 'price': item.product.price,
         });
       }
 
@@ -571,8 +572,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
     final delivery = _calculateDelivery(cart.total);
-    final walletUsed = _useWallet ? (_walletBalance > (cart.total + delivery - _discount) ? (cart.total + delivery - _discount) : _walletBalance) : 0;
-    final finalTotal = cart.total + delivery - _discount - walletUsed;
+    final currentGiftFee = _isGift ? _giftFee : 0.0;
+    
+    final walletUsed = _useWallet ? (_walletBalance > (cart.total + delivery + currentGiftFee - _discount) ? (cart.total + delivery + currentGiftFee - _discount) : _walletBalance) : 0;
+    final finalTotal = cart.total + delivery + currentGiftFee - _discount - walletUsed;
 
     return Scaffold(
       appBar: AppBar(title: const Text('إتمام الطلب'), backgroundColor: const Color(0xFFB07D62), foregroundColor: Colors.white),
@@ -607,10 +610,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           TextField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم الهاتف', border: OutlineInputBorder())),
           
           const SizedBox(height: 20),
+          
           // --- خيار الهدية ---
           SwitchListTile(
             title: const Text('إرسال كهدية 🎁', style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: const Text('سنقوم بتغليف الطلب كهدية وإرفاق رسالتك'),
+            subtitle: Text('سنقوم بتغليف الطلب كهدية (+$_giftFee ج.م)'),
             value: _isGift,
             activeColor: const Color(0xFFB07D62),
             onChanged: (v) => setState(() => _isGift = v),
@@ -673,8 +677,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             value: _useWallet, onChanged: (v) => setState(() => _useWallet = v),
           ),
 
-          const Divider(),
-          Text('الإجمالي: ${finalTotal.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFB07D62))),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: const Color(0xFFB07D62).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              children: [
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('المنتجات', style: TextStyle(fontSize: 15)), Text('${cart.total.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600))]),
+                const SizedBox(height: 6),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('التوصيل', style: TextStyle(fontSize: 15)), Text(delivery == 0 ? 'مجاني' : '${delivery.toStringAsFixed(0)} ج.م', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: delivery == 0 ? Colors.green : Colors.black))]),
+                
+                // سطر رسوم الهدية
+                if (_isGift) ...[
+                  const SizedBox(height: 6),
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('تغليف هدية', style: TextStyle(fontSize: 15, color: Colors.orange)), Text('+ ${_giftFee.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.orange))]),
+                ],
+
+                if (_discount > 0) ...[
+                  const SizedBox(height: 6),
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('الخصم', style: TextStyle(fontSize: 15, color: Colors.green)), Text('- ${_discount.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.green))]),
+                ],
+                if (walletUsed > 0) ...[
+                  const SizedBox(height: 6),
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('من المحفظة', style: TextStyle(fontSize: 15, color: Colors.blue)), Text('- ${walletUsed.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.blue))]),
+                ],
+                const Divider(height: 20),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('الإجمالي', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)), Text('${finalTotal.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFB07D62)))]),
+              ],
+            ),
+          ),
+          
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _loading ? null : _submit,
