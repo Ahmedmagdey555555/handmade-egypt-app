@@ -43,61 +43,68 @@ workflows:
         script: |
           cd apps/customer
           flutter create --platforms=android --org com.handmade --project-name customer_app .
-      - name: Overwrite Android Build Config
+      - name: Force SDK 36 and Permissions
         script: |
           cd apps/customer/android
-          rm -f app/build.gradle.kts
-          cat > app/build.gradle << 'EOF'
-          plugins {
-              id "com.android.application"
-              id "kotlin-android"
-              id "dev.flutter.flutter-gradle-plugin"
-          }
-          android {
-              namespace = "com.handmade.customer_app"
-              compileSdk = 34
-              ndkVersion = flutter.ndkVersion
-              compileOptions {
-                  sourceCompatibility = JavaVersion.VERSION_17
-                  targetCompatibility = JavaVersion.VERSION_17
-              }
-              kotlinOptions { jvmTarget = "17" }
-              defaultConfig {
-                  applicationId = "com.handmade.customer_app"
-                  minSdk = 21
-                  targetSdk = 34
-                  versionCode = flutter.versionCode
-                  versionName = flutter.versionName
-              }
-              buildTypes {
-                  release { signingConfig = signingConfigs.debug }
-              }
-          }
-          flutter { source = "../.." }
-          EOF
-      - name: Write AndroidManifest with INTERNET
-        script: |
-          cd apps/customer/android/app/src/main
+          
+          # إجبار إصدار الـ SDK على 36
+          if [ -f app/build.gradle ]; then
+            sed -i '' 's/compileSdkVersion .*/compileSdkVersion 36/' app/build.gradle
+            sed -i '' 's/targetSdkVersion .*/targetSdkVersion 36/' app/build.gradle
+            sed -i '' 's/minSdkVersion .*/minSdkVersion 21/' app/build.gradle
+          fi
+          if [ -f app/build.gradle.kts ]; then
+            sed -i '' 's/compileSdk = .*/compileSdk = 36/' app/build.gradle.kts
+            sed -i '' 's/targetSdk = .*/targetSdk = 36/' app/build.gradle.kts
+            sed -i '' 's/minSdk = .*/minSdk = 21/' app/build.gradle.kts
+          fi
+
+          # كتابة الـ AndroidManifest بالصلاحيات المطلوبة
+          cd app/src/main
           cat > AndroidManifest.xml << 'MANIFEST_END'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET"/>
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
               <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
               <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-              <application android:label="Handmade" android:name="${applicationName}" android:icon="@mipmap/ic_launcher">
-                  <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:taskAffinity="" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
-                      <meta-data android:name="io.flutter.embedding.android.NormalTheme" android:resource="@style/NormalTheme"/>
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+              <application
+                  android:label="Handmade"
+                  android:name="${applicationName}"
+                  android:icon="@mipmap/ic_launcher">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:launchMode="singleTop"
+                      android:taskAffinity=""
+                      android:theme="@style/LaunchTheme"
+                      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+                      android:hardwareAccelerated="true"
+                      android:windowSoftInputMode="adjustResize">
+                      <meta-data
+                          android:name="io.flutter.embedding.android.NormalTheme"
+                          android:resource="@style/NormalTheme"/>
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN"/>
                           <category android:name="android.intent.category.LAUNCHER"/>
                       </intent-filter>
                   </activity>
-                  <meta-data android:name="flutterEmbedding" android:value="2"/>
+                  <meta-data
+                      android:name="flutterEmbedding"
+                      android:value="2"/>
               </application>
               <queries>
-                  <intent><action android:name="android.intent.action.PROCESS_TEXT"/><data android:mimeType="text/plain"/></intent>
-                  <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent>
-                  <intent><action android:name="android.intent.action.DIAL"/></intent>
+                  <intent>
+                      <action android:name="android.intent.action.PROCESS_TEXT"/>
+                      <data android:mimeType="text/plain"/>
+                  </intent>
+                  <intent>
+                      <action android:name="android.intent.action.VIEW"/>
+                      <data android:scheme="https"/>
+                  </intent>
+                  <intent>
+                      <action android:name="android.intent.action.DIAL"/>
+                  </intent>
               </queries>
           </manifest>
           MANIFEST_END
