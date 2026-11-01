@@ -8,25 +8,21 @@ mkdir -p apps/customer/lib/providers
 mkdir -p apps/customer/lib/screens
 mkdir -p apps/customer/assets
 
+# ============ اللوجو الجديد (بطاقة الهاند ميد) ============
 cat > apps/customer/assets/icon.svg << 'SVG_END'
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#B07D62"/>
-      <stop offset="100%" style="stop-color:#8B5A3C"/>
-    </linearGradient>
-    <linearGradient id="hGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FFF5E6"/>
-      <stop offset="100%" style="stop-color:#F5E6D3"/>
-    </linearGradient>
-  </defs>
-  <rect width="1024" height="1024" rx="180" fill="url(#bgGrad)"/>
-  <circle cx="512" cy="512" r="360" fill="none" stroke="#F5E6D3" stroke-width="4" stroke-dasharray="12,10" opacity="0.5"/>
-  <path d="M 300 300 L 300 724 M 300 512 L 724 512 M 724 300 L 724 724" stroke="url(#hGrad)" stroke-width="70" stroke-linecap="round" fill="none"/>
-  <line x1="430" y1="360" x2="594" y2="664" stroke="#F5E6D3" stroke-width="14" stroke-linecap="round" opacity="0.55"/>
-  <circle cx="594" cy="664" r="22" fill="none" stroke="#F5E6D3" stroke-width="14" opacity="0.55"/>
-  <path d="M 470 320 Q 512 300 554 320" stroke="#F5E6D3" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.6"/>
-  <text x="512" y="870" text-anchor="middle" font-family="Georgia, serif" font-size="52" letter-spacing="12" fill="#FFF5E6" font-weight="bold">HANDMADE</text>
+  <rect width="1024" height="1024" rx="240" fill="#FAF7F2"/>
+  <!-- الخيط -->
+  <path d="M 300 200 Q 400 100 512 200" stroke="#B07D62" stroke-width="12" fill="none"/>
+  <!-- البطاقة -->
+  <path d="M 512 200 L 750 400 L 512 800 L 274 400 Z" fill="#B07D62"/>
+  <!-- تفاصيل البطاقة -->
+  <path d="M 512 230 L 710 400 L 512 750 L 314 400 Z" fill="none" stroke="#F5E6D3" stroke-width="6" stroke-dasharray="10,10"/>
+  <!-- ثقب الخيط -->
+  <circle cx="512" cy="250" r="20" fill="#FAF7F2"/>
+  <!-- حرف H جوه البطاقة -->
+  <path d="M 450 400 L 450 600 M 450 500 L 570 500 M 570 400 L 570 600" stroke="#F5E6D3" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="512" y="900" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" letter-spacing="10" fill="#2C1810" font-weight="bold">HANDMADE</text>
 </svg>
 SVG_END
 
@@ -75,7 +71,7 @@ flutter_launcher_icons:
   ios: false
   image_path: "assets/icon.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#B07D62"
+  adaptive_icon_background: "#FAF7F2"
   adaptive_icon_foreground: "assets/icon.png"
 
 flutter:
@@ -134,7 +130,7 @@ class MyApp extends StatelessWidget {
 }
 FILE_END
 
-# ============ models/product.dart ============
+# ============ models/product.dart (تمت إضافة وقت التحضير والخيارات) ============
 cat > apps/customer/lib/models/product.dart << 'FILE_END'
 class Product {
   final String id;
@@ -145,6 +141,8 @@ class Product {
   final String? storeId;
   final String? categoryId;
   final String? warranty;
+  final String? preparationTime;
+  final String? availableOptions;
   final int stock;
   final int hubStock;
 
@@ -157,6 +155,8 @@ class Product {
     this.storeId,
     this.categoryId,
     this.warranty,
+    this.preparationTime,
+    this.availableOptions,
     this.stock = 0,
     this.hubStock = 0,
   });
@@ -170,6 +170,8 @@ class Product {
         storeId: m['store_id'] as String?,
         categoryId: m['category_id'] as String?,
         warranty: m['warranty'] as String?,
+        preparationTime: m['preparation_time'] as String?,
+        availableOptions: m['available_options'] as String?,
         stock: m['stock'] ?? 0,
         hubStock: m['hub_stock'] ?? 0,
       );
@@ -214,21 +216,22 @@ class Ad {
 }
 FILE_END
 
-# ============ models/cart_item.dart ============
+# ============ models/cart_item.dart (تمت إضافة الخيارات) ============
 cat > apps/customer/lib/models/cart_item.dart << 'FILE_END'
 import 'product.dart';
 
 class CartItem {
   final Product product;
   int quantity;
+  final String? selectedOptions;
 
-  CartItem({required this.product, this.quantity = 1});
+  CartItem({required this.product, this.quantity = 1, this.selectedOptions});
 
   double get total => product.price * quantity;
 }
 FILE_END
 
-# ============ providers/cart_provider.dart ============
+# ============ providers/cart_provider.dart (تمت إضافة الخيارات) ============
 cat > apps/customer/lib/providers/cart_provider.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import '../models/cart_item.dart';
@@ -241,30 +244,31 @@ class CartProvider extends ChangeNotifier {
   int get count => _items.values.fold(0, (s, i) => s + i.quantity);
   double get total => _items.values.fold(0, (s, i) => s + i.total);
 
-  void add(Product p) {
-    if (_items.containsKey(p.id)) {
-      _items[p.id]!.quantity++;
+  void add(Product p, {String? options}) {
+    final key = options == null ? p.id : '${p.id}-$options';
+    if (_items.containsKey(key)) {
+      _items[key]!.quantity++;
     } else {
-      _items[p.id] = CartItem(product: p);
+      _items[key] = CartItem(product: p, selectedOptions: options);
     }
     notifyListeners();
   }
 
-  void remove(String id) {
-    _items.remove(id);
+  void remove(String key) {
+    _items.remove(key);
     notifyListeners();
   }
 
-  void increment(String id) {
-    _items[id]?.quantity++;
+  void increment(String key) {
+    _items[key]?.quantity++;
     notifyListeners();
   }
 
-  void decrement(String id) {
-    final item = _items[id];
+  void decrement(String key) {
+    final item = _items[key];
     if (item == null) return;
     if (item.quantity <= 1) {
-      _items.remove(id);
+      _items.remove(key);
     } else {
       item.quantity--;
     }
@@ -278,7 +282,6 @@ class CartProvider extends ChangeNotifier {
 }
 FILE_END
 
-# ============ screens/splash_screen.dart ============
 # ============ screens/splash_screen.dart ============
 cat > apps/customer/lib/screens/splash_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
@@ -305,7 +308,7 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       await Permission.location.request();
     } catch (_) {}
-    await Future.delayed(const Duration(seconds: 3)); // 3 ثواني عشان الصورة تبان
+    await Future.delayed(const Duration(seconds: 3)); 
     if (!mounted) return;
     final session = Supabase.instance.client.auth.currentSession;
     Navigator.pushReplacement(
@@ -320,15 +323,14 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF7F2), // خلفية بيج فاتحة
+      backgroundColor: const Color(0xFFFAF7F2), 
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // عرض الصورة اللي إنت رفعتها
             Image.asset(
               'assets/splash.jpg',
-              width: MediaQuery.of(context).size.width * 0.8, // تاخد 80% من عرض الشاشة
+              width: MediaQuery.of(context).size.width * 0.8, 
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 30),
@@ -341,7 +343,7 @@ class _SplashScreenState extends State<SplashScreen> {
 }
 FILE_END
 
-# ============ screens/login_screen.dart ============
+# ============ screens/login_screen.dart (بصورة الراجل) ============
 cat > apps/customer/lib/screens/login_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -399,15 +401,16 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.all(28),
           child: Column(
             children: [
-              const SizedBox(height: 60),
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFB07D62),
-                  borderRadius: BorderRadius.circular(24),
+              const SizedBox(height: 40),
+              // صورة الراجل في شاشة الدخول
+              ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Image.asset(
+                  'assets/splash.jpg',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.cover,
                 ),
-                child: const Icon(Icons.handyman, size: 60, color: Colors.white),
               ),
               const SizedBox(height: 20),
               const Text(
@@ -490,5 +493,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 FILE_END
+
 cp 1793560460030.jpg apps/customer/assets/splash.jpg
 echo "✅ setup-phase1a.sh done"
