@@ -38,7 +38,6 @@ class SupabaseConfig {
   static const String anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxb3Zhb2xnY2pyZ2pvZXFrZGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwOTM1NTYsImV4cCI6MjEwNzY2OTU1Nn0.PWA4foPpi15pWl-Hviutu_9stJctjFJor4xx0ghU90Y';
 }
 FILE_END
-
 # ============ pubspec.yaml ============
 cat > apps/customer/pubspec.yaml << 'FILE_END'
 name: customer_app
@@ -54,16 +53,14 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  geolocator: ^11.0.0
-  geocoding: ^3.0.0
   cupertino_icons: ^1.0.6
   supabase_flutter: ^2.5.6
   cached_network_image: ^3.3.1
   provider: ^6.1.2
   permission_handler: ^11.3.0
-  url_launcher: ^6.2.5
   google_fonts: ^6.1.0
   share_plus: ^9.0.0
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
