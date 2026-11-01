@@ -6,7 +6,6 @@ rm -rf apps/customer
 mkdir -p apps/customer/lib/models
 mkdir -p apps/customer/lib/providers
 mkdir -p apps/customer/lib/screens
-
 mkdir -p apps/customer/assets
 
 cat > apps/customer/assets/icon.svg << 'SVG_END'
@@ -31,13 +30,14 @@ cat > apps/customer/assets/icon.svg << 'SVG_END'
 </svg>
 SVG_END
 
-# إنشاء supabase_config.dart
+# ============ supabase_config.dart ============
 cat > apps/customer/lib/supabase_config.dart << 'FILE_END'
 class SupabaseConfig {
   static const String url = 'https://pqovaolgcjrgjoeqkdlf.supabase.co';
   static const String anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxb3Zhb2xnY2pyZ2pvZXFrZGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwOTM1NTYsImV4cCI6MjEwNzY2OTU1Nn0.PWA4foPpi15pWl-Hviutu_9stJctjFJor4xx0ghU90Y';
 }
 FILE_END
+
 # ============ pubspec.yaml ============
 cat > apps/customer/pubspec.yaml << 'FILE_END'
 name: customer_app
@@ -61,6 +61,9 @@ dependencies:
   google_fonts: ^6.1.0
   share_plus: ^9.0.0
   url_launcher: ^6.2.5
+  geolocator: ^11.0.0
+  geocoding: ^3.0.0
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
