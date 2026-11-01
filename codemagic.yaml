@@ -129,8 +129,20 @@ workflows:
         script: |
           cd apps/customer
           flutter build apk --release
+      - name: Build AAB
+        script: |
+          cd apps/customer
+          flutter build appbundle --release
     artifacts:
       - apps/customer/build/app/outputs/**/*.apk
+      - apps/customer/build/app/outputs/**/*.aab
+    publishing:
+      email:
+        recipients:
+          - ahmedmagdey736@gmail.com
+        notify:
+          success: true
+          failure: true
 
   merchant-build:
     name: Merchant App - Android
@@ -198,9 +210,7 @@ workflows:
             sed -i '' 's/minSdk = .*/minSdk = 21/' app/build.gradle.kts
           fi
           echo "android.suppressUnsupportedCompileSdk=36" >> gradle.properties
-      - name: Write AndroidManifest
-        script: |
-          cd apps/merchant/android/app/src/main
+          cd app/src/main
           cat > AndroidManifest.xml << 'MANIFEST_END'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET"/>
@@ -245,5 +255,17 @@ workflows:
         script: |
           cd apps/merchant
           flutter build apk --release
+      - name: Build AAB
+        script: |
+          cd apps/merchant
+          flutter build appbundle --release
     artifacts:
       - apps/merchant/build/app/outputs/**/*.apk
+      - apps/merchant/build/app/outputs/**/*.aab
+    publishing:
+      email:
+        recipients:
+          - ahmedmagdey736@gmail.com
+        notify:
+          success: true
+          failure: true
