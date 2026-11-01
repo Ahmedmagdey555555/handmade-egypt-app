@@ -279,6 +279,7 @@ class CartProvider extends ChangeNotifier {
 FILE_END
 
 # ============ screens/splash_screen.dart ============
+# ============ screens/splash_screen.dart ============
 cat > apps/customer/lib/screens/splash_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -304,7 +305,7 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       await Permission.location.request();
     } catch (_) {}
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 3)); // 3 ثواني عشان الصورة تبان
     if (!mounted) return;
     final session = Supabase.instance.client.auth.currentSession;
     Navigator.pushReplacement(
@@ -319,43 +320,19 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFB07D62),
+      backgroundColor: const Color(0xFFFAF7F2), // خلفية بيج فاتحة
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: const Icon(
-                Icons.handyman,
-                size: 80,
-                color: Color(0xFFB07D62),
-              ),
+            // عرض الصورة اللي إنت رفعتها
+            Image.asset(
+              'assets/splash.jpg',
+              width: MediaQuery.of(context).size.width * 0.8, // تاخد 80% من عرض الشاشة
+              fit: BoxFit.contain,
             ),
-            const SizedBox(height: 28),
-            const Text(
-              'Handmade',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 44,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 4,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'CRAFTS',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-                letterSpacing: 10,
-              ),
-            ),
+            const SizedBox(height: 30),
+            const CircularProgressIndicator(color: Color(0xFFB07D62)),
           ],
         ),
       ),
