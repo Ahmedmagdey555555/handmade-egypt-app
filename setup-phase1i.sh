@@ -17,7 +17,7 @@ class Product {
   final String? categoryId;
   final String? warranty;
   final String? preparationTime;
-  final String? availableOptions; // خيارات المنتج
+  final String? availableOptions;
   final int stock;
   final int hubStock;
 
@@ -44,7 +44,7 @@ import 'product.dart';
 class CartItem {
   final Product product;
   int quantity;
-  final String? selectedOptions; // الخيارات اللي العميل اختارها
+  final String? selectedOptions;
 
   CartItem({required this.product, this.quantity = 1, this.selectedOptions});
 
@@ -52,7 +52,7 @@ class CartItem {
 }
 FILE_END
 
-# ============ 2. تحديث الـ Cart Provider عشان يدعم الخيارات ============
+# ============ 2. تحديث الـ Cart Provider ============
 cat > apps/customer/lib/providers/cart_provider.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import '../models/cart_item.dart';
@@ -66,7 +66,6 @@ class CartProvider extends ChangeNotifier {
   double get total => _items.values.fold(0, (s, i) => s + i.total);
 
   void add(Product p, {String? options}) {
-    // لو المنتج ليه خيارات، بنعتبره منتج جديد عشان لو نفس المنتج بخيار تاني
     final key = options == null ? p.id : '${p.id}-$options';
     
     if (_items.containsKey(key)) {
@@ -105,7 +104,7 @@ class CartProvider extends ChangeNotifier {
 }
 FILE_END
 
-# ============ 3. صفحة تفاصيل المنتج (تسأل عن الخيارات) ============
+# ============ 3. صفحة تفاصيل المنتج ============
 cat > apps/customer/lib/screens/product_detail_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -127,7 +126,6 @@ class ProductDetailScreen extends StatelessWidget {
       return;
     }
 
-    // لو فيه خيارات، نفتح شاشة نطلب منه يكتبها
     final controller = TextEditingController();
     showModalBottomSheet(
       context: context,
@@ -179,10 +177,8 @@ class ProductDetailScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 340,
-            pinned: true,
-            backgroundColor: const Color(0xFFB07D62),
-            foregroundColor: Colors.white,
+            expandedHeight: 340, pinned: true,
+            backgroundColor: const Color(0xFFB07D62), foregroundColor: Colors.white,
             actions: [
               IconButton(onPressed: () => fav.toggle(product.id), icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Colors.red : Colors.white)),
             ],
@@ -198,43 +194,27 @@ class ProductDetailScreen extends StatelessWidget {
                 children: [
                   Text(product.title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
-                  
                   if (product.storeId != null)
                     InkWell(
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => StoreScreen(storeId: product.storeId!, storeName: 'متجر التاجر'))),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.store, color: Color(0xFFB07D62), size: 20),
-                          SizedBox(width: 5),
-                          Text('زيارة المتجر', style: TextStyle(color: Color(0xFFB07D62), fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
-                        ],
-                      ),
+                      child: const Row(children: [Icon(Icons.store, color: Color(0xFFB07D62), size: 20), SizedBox(width: 5), Text('زيارة المتجر', style: TextStyle(color: Color(0xFFB07D62), fontWeight: FontWeight.bold, decoration: TextDecoration.underline))]),
                     ),
-                  
                   const SizedBox(height: 14),
                   Text('${product.price.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFB07D62))),
                   const SizedBox(height: 10),
                   Text('وقت التحضير: ${product.preparationTime ?? "فوري"}', style: const TextStyle(fontSize: 14, color: Colors.blue, fontWeight: FontWeight.bold)),
-                  
                   if (product.availableOptions != null && product.availableOptions!.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Text('الخيارات المتاحة: ${product.availableOptions}', style: const TextStyle(fontSize: 14, color: Colors.orange, fontWeight: FontWeight.bold)),
                   ],
-
                   if (product.warranty != null) ...[
                     const SizedBox(height: 15),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                      child: Row(children: [const Icon(Icons.shield, color: Colors.green), const SizedBox(width: 8), Text('ضمان: ${product.warranty}', style: const TextStyle(color: Colors.green))]),
-                    ),
+                    Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Row(children: [const Icon(Icons.shield, color: Colors.green), const SizedBox(width: 8), Text('ضمان: ${product.warranty}', style: const TextStyle(color: Colors.green))])),
                   ],
-                  
                   const SizedBox(height: 24),
                   const Text('الوصف', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   Text(product.description ?? 'لا يوجد وصف', style: TextStyle(fontSize: 15, color: Colors.grey.shade700, height: 1.6)),
-                  
                   const SizedBox(height: 30),
                   ReviewsSection(productId: product.id),
                   const SizedBox(height: 100),
@@ -245,13 +225,11 @@ class ProductDetailScreen extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        color: Colors.white,
+        padding: const EdgeInsets.all(16), color: Colors.white,
         child: SafeArea(
           child: FilledButton.icon(
             onPressed: () => _addToCart(context),
-            icon: const Icon(Icons.shopping_cart),
-            label: const Text('أضف للسلة', style: TextStyle(fontSize: 16)),
+            icon: const Icon(Icons.shopping_cart), label: const Text('أضف للسلة', style: TextStyle(fontSize: 16)),
             style: FilledButton.styleFrom(backgroundColor: const Color(0xFFB07D62), padding: const EdgeInsets.symmetric(vertical: 16)),
           ),
         ),
@@ -261,7 +239,7 @@ class ProductDetailScreen extends StatelessWidget {
 }
 FILE_END
 
-# ============ 4. صفحة السلة (عرض الخيارات) ============
+# ============ 4. صفحة السلة ============
 cat > apps/customer/lib/screens/cart_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -289,23 +267,18 @@ class CartScreen extends StatelessWidget {
                 final item = items[i];
                 final key = item.selectedOptions == null ? item.product.id : '${item.product.id}-${item.selectedOptions}';
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
                   child: Row(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: item.product.imageUrl == null ? Container(width: 80, height: 80, color: Colors.grey.shade200) : CachedNetworkImage(imageUrl: item.product.imageUrl!, width: 80, height: 80, fit: BoxFit.cover),
-                      ),
+                      ClipRRect(borderRadius: BorderRadius.circular(10), child: item.product.imageUrl == null ? Container(width: 80, height: 80, color: Colors.grey.shade200) : CachedNetworkImage(imageUrl: item.product.imageUrl!, width: 80, height: 80, fit: BoxFit.cover)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(item.product.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                            if (item.selectedOptions != null)
-                              Text('الخيار: ${item.selectedOptions}', style: const TextStyle(color: Colors.orange, fontSize: 12)),
+                            if (item.selectedOptions != null) Text('الخيار: ${item.selectedOptions}', style: const TextStyle(color: Colors.orange, fontSize: 12)),
                             const SizedBox(height: 4),
                             Text('${item.product.price.toStringAsFixed(0)} ج.م', style: const TextStyle(color: Color(0xFFB07D62), fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
@@ -328,22 +301,14 @@ class CartScreen extends StatelessWidget {
       bottomNavigationBar: items.isEmpty
           ? null
           : Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))]),
+              padding: const EdgeInsets.all(16), decoration: const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))]),
               child: SafeArea(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('الإجمالي', style: TextStyle(fontSize: 17)), Text('${cart.total.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFB07D62)))]),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen())),
-                        style: FilledButton.styleFrom(backgroundColor: const Color(0xFFB07D62), padding: const EdgeInsets.symmetric(vertical: 16)),
-                        child: const Text('إتمام الطلب', style: TextStyle(fontSize: 16)),
-                      ),
-                    ),
+                    SizedBox(width: double.infinity, child: FilledButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen())), style: FilledButton.styleFrom(backgroundColor: const Color(0xFFB07D62), padding: const EdgeInsets.symmetric(vertical: 16)), child: const Text('إتمام الطلب', style: TextStyle(fontSize: 16)))),
                   ],
                 ),
               ),
@@ -354,17 +319,13 @@ class CartScreen extends StatelessWidget {
   Widget _qtyBtn(IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 32, height: 32,
-        decoration: BoxDecoration(color: const Color(0xFFB07D62).withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, size: 18, color: const Color(0xFFB07D62)),
-      ),
+      child: Container(width: 32, height: 32, decoration: BoxDecoration(color: const Color(0xFFB07D62).withOpacity(0.15), borderRadius: BorderRadius.circular(8)), child: Icon(icon, size: 18, color: const Color(0xFFB07D62))),
     );
   }
 }
 FILE_END
 
-# ============ 5. صفحة الدفع (خيار الهدية + رسوم التغليف) ============
+# ============ 5. صفحة الدفع ============
 cat > apps/customer/lib/screens/checkout_screen.dart << 'FILE_END'
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -399,7 +360,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _fetchingLocation = true;
   
   bool _isGift = false; 
-  final double _giftFee = 20.0; // سعر تغليف الهدية (ممكن تغيره هنا)
+  double _giftFee = 20.0; // القيمة الافتراضية (وهنقراها من الداتابيز)
   
   double _walletBalance = 0;
   bool _useWallet = false;
@@ -446,6 +407,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           if (s['key'] == 'vodafone_cash_number') _vodafoneNum = s['value'].toString();
           if (s['key'] == 'etisalat_cash_number') _etisalatNum = s['value'].toString();
           if (s['key'] == 'instapay_address') _instapayAddr = s['value'].toString();
+          if (s['key'] == 'gift_fee') _giftFee = double.tryParse(s['value'].toString()) ?? 20.0;
         }
       });
     } catch (_) {}
@@ -547,7 +509,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'building_no': _building.text.trim(), 'apartment_no': _apartment.text.trim(), 'landmark': _landmark.text.trim(),
         'receipt_image_url': receiptUrl, 'payment_method': _payment,
         'is_gift': _isGift, 'gift_message': _isGift ? _giftMessage.text.trim() : null,
-        'gift_fee': currentGiftFee, // حفظ رسوم الهدية
+        'gift_fee': currentGiftFee,
       }).select().single();
 
       for (final item in cart.items.values) {
@@ -611,7 +573,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           
           const SizedBox(height: 20),
           
-          // --- خيار الهدية ---
           SwitchListTile(
             title: const Text('إرسال كهدية 🎁', style: TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text('سنقوم بتغليف الطلب كهدية (+$_giftFee ج.م)'),
@@ -623,8 +584,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: TextField(
-                controller: _giftMessage,
-                maxLines: 2,
+                controller: _giftMessage, maxLines: 2,
                 decoration: const InputDecoration(labelText: 'اكتب رسالة الهدية هنا...', border: OutlineInputBorder(), prefixIcon: Icon(Icons.card_giftcard)),
               ),
             ),
@@ -686,13 +646,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('المنتجات', style: TextStyle(fontSize: 15)), Text('${cart.total.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600))]),
                 const SizedBox(height: 6),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('التوصيل', style: TextStyle(fontSize: 15)), Text(delivery == 0 ? 'مجاني' : '${delivery.toStringAsFixed(0)} ج.م', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: delivery == 0 ? Colors.green : Colors.black))]),
-                
-                // سطر رسوم الهدية
                 if (_isGift) ...[
                   const SizedBox(height: 6),
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('تغليف هدية', style: TextStyle(fontSize: 15, color: Colors.orange)), Text('+ ${_giftFee.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.orange))]),
                 ],
-
                 if (_discount > 0) ...[
                   const SizedBox(height: 6),
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('الخصم', style: TextStyle(fontSize: 15, color: Colors.green)), Text('- ${_discount.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.green))]),
@@ -706,7 +663,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ],
             ),
           ),
-          
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _loading ? null : _submit,
@@ -720,7 +676,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 }
 FILE_END
 
-# ============ 6. صفحة تسجيل الدخول (Google/Facebook) ============
+# ============ 6. صفحة تسجيل الدخول ============
 cat > apps/customer/lib/screens/login_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -809,13 +765,12 @@ class _LoginScreenState extends State<LoginScreen> {
               const Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("أو سجل باستخدام", style: TextStyle(color: Colors.grey))), Expanded(child: Divider())]),
               const SizedBox(height: 20),
               
-              // أزرار السوشيال ميديا
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   OutlinedButton.icon(
                     onPressed: () => _socialLogin(OAuthProvider.google),
-                    icon: const Icon(Icons.g_mobiledata, size: 30, color: Colors.red), // أيقونة جوجل
+                    icon: const Icon(Icons.g_mobiledata, size: 30, color: Colors.red),
                     label: const Text('Google', style: TextStyle(color: Colors.black)),
                     style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), side: const BorderSide(color: Colors.grey)),
                   ),
@@ -838,7 +793,6 @@ class _LoginScreenState extends State<LoginScreen> {
 FILE_END
 
 # ============ 7. تحديث الـ Home Screen (البنرات) ============
-# (نفس الكود اللي بعتهولك فوق في الرسالة السابقة عشان البنرات تظبط)
 cat > apps/customer/lib/screens/home_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
