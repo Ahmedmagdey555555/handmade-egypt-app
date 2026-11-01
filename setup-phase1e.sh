@@ -284,6 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ? const Center(child: CircularProgressIndicator())
               : CustomScrollView(
                   slivers: [
+                    // 1. شريط البحث
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -303,25 +304,44 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    // البانر الأول (عريض)
+
+                    // 2. البانرات العلوية (شبكة 2×2) - أول 4 إعلانات
                     if (_ads.isNotEmpty)
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
-                            child: _ads[0].imageUrl == null
-                                ? Container(height: 150, color: Colors.grey.shade300)
-                                : CachedNetworkImage(imageUrl: _ads[0].imageUrl!, height: 150, width: double.infinity, fit: BoxFit.cover),
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _ads.length > 4 ? 4 : _ads.length,
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 2.5, // شكل عرضي
+                            ),
+                            itemBuilder: (c, i) {
+                              final ad = _ads[i];
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: ad.imageUrl == null
+                                    ? Container(color: Colors.grey.shade300)
+                                    : CachedNetworkImage(imageUrl: ad.imageUrl!, fit: BoxFit.cover),
+                              );
+                            },
                           ),
                         ),
                       ),
+
+                    // 3. عنوان الأقسام
                     const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
                         child: Text('الأقسام', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2C1810))),
                       ),
                     ),
+
+                    // 4. الأقسام
                     SliverToBoxAdapter(
                       child: SizedBox(
                         height: 110,
@@ -354,8 +374,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    // البانرات الأفقية (باقي الإعلانات)
-                    if (_ads.length > 1)
+
+                    // 5. البانرات السفلية (أفقية) - باقي الإعلانات
+                    if (_ads.length > 4)
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.only(top: 16),
@@ -364,9 +385,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: _ads.length - 1,
+                              itemCount: _ads.length - 4,
                               itemBuilder: (c, i) {
-                                final ad = _ads[i + 1];
+                                final ad = _ads[i + 4]; // نبدأ من الإعلان الخامس
                                 return Container(
                                   width: 220,
                                   margin: const EdgeInsets.only(left: 10),
@@ -382,12 +403,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
+
+                    // 6. عنوان المنتجات
                     const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
                         child: Text('المنتجات', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2C1810))),
                       ),
                     ),
+
+                    // 7. المنتجات
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                       sliver: SliverGrid(
