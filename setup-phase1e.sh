@@ -39,18 +39,18 @@ class MyApp extends StatelessWidget {
         title: 'Handmade',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-  colorSchemeSeed: const Color(0xFFB07D62),
-  useMaterial3: true,
-  scaffoldBackgroundColor: const Color(0xFFFAF7F2),
-  textTheme: GoogleFonts.cairoTextTheme(),
-  appBarTheme: AppBarTheme(
-    titleTextStyle: GoogleFonts.cairo(
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-      color: Colors.white,
-    ),
-  ),
-),
+          colorSchemeSeed: const Color(0xFFB07D62),
+          useMaterial3: true,
+          scaffoldBackgroundColor: const Color(0xFFFAF7F2),
+          textTheme: GoogleFonts.cairoTextTheme(),
+          appBarTheme: AppBarTheme(
+            titleTextStyle: GoogleFonts.cairo(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
         locale: const Locale('ar'),
         supportedLocales: const [Locale('ar'), Locale('en')],
         localizationsDelegates: const [
@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
 }
 FILE_END
 
-# ============ screens/main_screen.dart ============
+# ============ screens/main_screen.dart (صورة الراجل في الهيدر) ============
 cat > apps/customer/lib/screens/main_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -121,10 +121,10 @@ class _MainScreenState extends State<MainScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.handyman,
-                  color: Color(0xFFB07D62),
-                  size: 22,
+                // استبدال الأيقونة بصورة الراجل
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset('assets/splash.jpg', fit: BoxFit.cover),
                 ),
               ),
             if (_index == 0) const SizedBox(width: 10),
@@ -210,7 +210,7 @@ class _MainScreenState extends State<MainScreen> {
 }
 FILE_END
 
-# ============ screens/home_screen.dart ============
+# ============ screens/home_screen.dart (البنرات العريضة والأفقية) ============
 cat > apps/customer/lib/screens/home_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -252,7 +252,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ]);
       if (!mounted) return;
       
-      // فلترة المنتجات اللي ليها مخزون في المركز أو عند التاجر
       final rawProducts = (results[0] as List).map((e) => Product.fromMap(e)).toList();
       final availableProducts = rawProducts.where((p) => (p.hubStock + p.stock) > 0).toList();
 
@@ -304,29 +303,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
+                    // البانر الأول (عريض)
                     if (_ads.isNotEmpty)
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                          child: SizedBox(
-                            height: 100,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _ads.length,
-                              itemBuilder: (c, i) {
-                                final ad = _ads[i];
-                                return Container(
-                                  width: 220,
-                                  margin: const EdgeInsets.only(right: 10),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: ad.imageUrl == null
-                                        ? Container(color: Colors.grey.shade300)
-                                        : CachedNetworkImage(imageUrl: ad.imageUrl!, fit: BoxFit.cover),
-                                  ),
-                                );
-                              },
-                            ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: _ads[0].imageUrl == null
+                                ? Container(height: 150, color: Colors.grey.shade300)
+                                : CachedNetworkImage(imageUrl: _ads[0].imageUrl!, height: 150, width: double.infinity, fit: BoxFit.cover),
                           ),
                         ),
                       ),
@@ -356,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       width: 66, height: 66,
                                       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
                                       alignment: Alignment.center,
-                                      child: Text(cat.icon ?? '?', style: const TextStyle(fontSize: 30)),
+                                      child: Text(cat.icon ?? '📦', style: const TextStyle(fontSize: 30)),
                                     ),
                                     const SizedBox(height: 8),
                                     Text(cat.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -368,6 +354,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
+                    // البانرات الأفقية (باقي الإعلانات)
+                    if (_ads.length > 1)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: SizedBox(
+                            height: 100,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: _ads.length - 1,
+                              itemBuilder: (c, i) {
+                                final ad = _ads[i + 1];
+                                return Container(
+                                  width: 220,
+                                  margin: const EdgeInsets.only(left: 10),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: ad.imageUrl == null
+                                        ? Container(color: Colors.grey.shade300)
+                                        : CachedNetworkImage(imageUrl: ad.imageUrl!, fit: BoxFit.cover),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
                     const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
@@ -618,7 +632,7 @@ class ProductDetailScreen extends StatelessWidget {
 }
 FILE_END
 
-# ============ تحديث splash_screen للتحويل لـMainScreen ============
+# ============ تحديث splash_screen (بصورة الراجل) ============
 cat > apps/customer/lib/screens/splash_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -644,7 +658,7 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       await Permission.location.request();
     } catch (_) {}
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
     final session = Supabase.instance.client.auth.currentSession;
     Navigator.pushReplacement(
@@ -658,43 +672,18 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFB07D62),
+      backgroundColor: const Color(0xFFFAF7F2),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: const Icon(
-                Icons.handyman,
-                size: 80,
-                color: Color(0xFFB07D62),
-              ),
+            Image.asset(
+              'assets/splash.jpg',
+              width: MediaQuery.of(context).size.width * 0.8,
+              fit: BoxFit.contain,
             ),
-            const SizedBox(height: 28),
-            const Text(
-              'Handmade',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 44,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 4,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'CRAFTS',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-                letterSpacing: 10,
-              ),
-            ),
+            const SizedBox(height: 30),
+            const CircularProgressIndicator(color: Color(0xFFB07D62)),
           ],
         ),
       ),
@@ -703,7 +692,7 @@ class _SplashScreenState extends State<SplashScreen> {
 }
 FILE_END
 
-# ============ تحديث login_screen للتحويل لـMainScreen ============
+# ============ تحديث login_screen (بصورة الراجل) ============
 cat > apps/customer/lib/screens/login_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -761,15 +750,15 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.all(28),
           child: Column(
             children: [
-              const SizedBox(height: 60),
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFB07D62),
-                  borderRadius: BorderRadius.circular(24),
+              const SizedBox(height: 40),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Image.asset(
+                  'assets/splash.jpg',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.cover,
                 ),
-                child: const Icon(Icons.handyman, size: 60, color: Colors.white),
               ),
               const SizedBox(height: 20),
               const Text(
