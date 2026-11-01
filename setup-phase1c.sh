@@ -298,7 +298,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (permission == LocationPermission.denied) { setState(() => _fetchingLocation = false); return; }
       
       Position position = await Geolocator.getCurrentPosition();
-      List<Placemark> placemarks = await Geocoding().placemarkFromCoordinates(position.latitude, position.longitude);
+      // التعديل هنا: شلنا Geocoding() واستخدمنا الدالة مباشرة
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
       
       if (placemarks.isNotEmpty && mounted) {
         final p = placemarks[0];
