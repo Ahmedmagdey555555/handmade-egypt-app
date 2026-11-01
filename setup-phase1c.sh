@@ -222,6 +222,7 @@ FILE_END
 cat > apps/customer/lib/screens/checkout_screen.dart << 'FILE_END'
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -257,6 +258,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String _couponMsg = '';
   File? _receiptImage;
 
+  // أرقام المحافظ
+  String _vodafoneNum = 'جاري التحميل...';
+  String _etisalatNum = 'جاري التحميل...';
+  String _instapayAddr = 'جاري التحميل...';
+
   final List<Map<String, dynamic>> _zones = [];
   final List<Map<String, dynamic>> _methods = [
     {'key': 'vodafone', 'name': 'فودافون كاش', 'icon': 'VF', 'enabled': true},
@@ -275,7 +281,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _loadData() async {
     try {
       final data = await Supabase.instance.client.from('delivery_zones').select().eq('is_active', true);
-      final settings = await Supabase.instance.client.from('app_settings').select().eq('key', 'free_delivery_threshold').maybeSingle();
+      final settings = await Supabase.instance.client.from('app_settings').select();
       final uid = Supabase.instance.client.auth.currentUser?.id;
       
       if (uid != null) {
@@ -286,7 +292,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (!mounted) return;
       setState(() {
         _zones.addAll(data.cast<Map<String, dynamic>>());
-        if (settings != null && settings['value'] != null) _freeAbove = double.tryParse(settings['value'].toString()) ?? 750;
+        for (var s in settings) {
+          if (s['key'] == 'free_delivery_threshold') _freeAbove = double.tryParse(s['value'].toString()) ?? 750;
+          if (s['key'] == 'vodafone_cash_number') _vodafoneNum = s['value'].toString();
+          if (s['key'] == 'etisalat_cash_number') _etisalatNum = s['value'].toString();
+          if (s['key'] == 'instapay_address') _instapayAddr = s['value'].toString();
+        }
       });
     } catch (_) {}
   }
@@ -298,7 +309,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (permission == LocationPermission.denied) { setState(() => _fetchingLocation = false); return; }
       
       Position position = await Geolocator.getCurrentPosition();
-      // التعديل هنا: شلنا Geocoding() واستخدمنا الدالة مباشرة
       List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
       
       if (placemarks.isNotEmpty && mounted) {
@@ -342,6 +352,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
     if (picked != null) setState(() => _receiptImage = File(picked.path));
+  }
+
+  void _copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الرقم')));
   }
 
   Future<void> _submit() async {
@@ -446,7 +461,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           )),
           
           if (_payment != 'card') ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 15),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFB07D62).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFB07D62).withOpacity(0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('يرجى تحويل المبلغ على هذا الرقم:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB07D62))),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _payment == 'vodafone' ? _vodafoneNum : (_payment == 'etisalat' ? _etisalatNum : _instapayAddr),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.copy, color: Color(0xFFB07D62)),
+                        onPressed: () => _copyToClipboard(_payment == 'vodafone' ? _vodafoneNum : (_payment == 'etisalat' ? _etisalatNum : _instapayAddr)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 15),
             OutlinedButton.icon(
               onPressed: _pickReceipt,
               icon: const Icon(Icons.upload_file),
