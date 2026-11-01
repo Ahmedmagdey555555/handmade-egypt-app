@@ -513,5 +513,5 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 FILE_END
-
+cp 1793560460030.jpg apps/customer/assets/splash.jpg
 echo "✅ setup-phase1a.sh done"
