@@ -43,24 +43,95 @@ workflows:
         script: |
           cd apps/customer
           flutter create --platforms=android --org com.handmade --project-name customer_app .
-      - name: Force SDK 36 and Permissions
+      - name: Force All Plugins to SDK 36
         script: |
           cd apps/customer/android
           
-          # إجبار إصدار الـ SDK على 36
-          if [ -f app/build.gradle ]; then
-            sed -i '' 's/compileSdkVersion .*/compileSdkVersion 36/' app/build.gradle
-            sed -i '' 's/targetSdkVersion .*/targetSdkVersion 36/' app/build.gradle
-            sed -i '' 's/minSdkVersion .*/minSdkVersion 21/' app/build.gradle
-          fi
-          if [ -f app/build.gradle.kts ]; then
-            sed -i '' 's/compileSdk = .*/compileSdk = 36/' app/build.gradle.kts
-            sed -i '' 's/targetSdk = .*/targetSdk = 36/' app/build.gradle.kts
-            sed -i '' 's/minSdk = .*/minSdk = 21/' app/build.gradle.kts
-          fi
+          # كتابة ملف build.gradle الرئيسي لإجبار كل المكتبات على إصدار 36
+          cat > build.gradle << 'EOF'
+          allprojects {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
 
-          # كتابة الـ AndroidManifest بالصلاحيات المطلوبة
-          cd app/src/main
+          rootProject.buildDir = "../build"
+          subprojects {
+              project.buildDir = "${rootProject.buildDir}/${project.name}"
+          }
+          subprojects {
+              project.evaluationDependsOn(":app")
+          }
+
+          // الإجبار على إصدار 36 لكل المكتبات القديمة
+          subprojects {
+              afterEvaluate { project ->
+                  if (project.extensions.findByName("android") != null) {
+                      project.android {
+                          compileSdkVersion 36
+                          buildToolsVersion "36.0.0"
+                      }
+                  }
+              }
+          }
+
+          tasks.register("clean", Delete) {
+              delete rootProject.buildDir
+          }
+          EOF
+
+          # تحديث إعدادات التطبيق الأساسي
+          cat > app/build.gradle << 'EOF'
+          plugins {
+              id "com.android.application"
+              id "kotlin-android"
+              id "dev.flutter.flutter-gradle-plugin"
+          }
+
+          android {
+              namespace = "com.handmade.customer_app"
+              compileSdk = 36
+              ndkVersion = flutter.ndkVersion
+
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+
+              defaultConfig {
+                  applicationId = "com.handmade.customer_app"
+                  minSdk = 21
+                  targetSdk = 36
+                  versionCode = flutter.versionCode
+                  versionName = flutter.versionName
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig = signingConfigs.debug
+                  }
+              }
+          }
+
+          flutter {
+              source = "../.."
+          }
+          EOF
+
+          # تحديث ملف gradle.properties
+          cat >> gradle.properties << 'EOF'
+          android.useAndroidX=true
+          android.enableJetifier=true
+          org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=2G -XX:+HeapDumpOnOutOfMemoryError
+          EOF
+      - name: Write AndroidManifest with Permissions
+        script: |
+          cd apps/customer/android/app/src/main
           cat > AndroidManifest.xml << 'MANIFEST_END'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET"/>
