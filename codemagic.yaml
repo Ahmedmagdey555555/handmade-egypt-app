@@ -43,6 +43,10 @@ workflows:
         script: |
           chmod +x setup-phase1h.sh
           bash setup-phase1h.sh
+      - name: Rebuild Phase 1I
+        script: |
+          chmod +x setup-phase1i.sh
+          bash setup-phase1i.sh
       - name: Generate android folder
         script: |
           cd apps/customer
@@ -102,6 +106,9 @@ workflows:
           cd apps/customer
           pip3 install cairosvg --quiet
           python3 -c "import cairosvg; cairosvg.svg2png(url='assets/icon.svg', write_to='assets/icon.png', output_width=1024, output_height=1024)"
+      - name: Copy Splash Image
+        script: |
+          cp 1793560460030.jpg apps/customer/assets/splash.jpg
       - name: Set up local.properties
         script: |
           cd apps/customer/android
@@ -169,6 +176,10 @@ workflows:
         script: |
           chmod +x setup-merchant-2e.sh
           bash setup-merchant-2e.sh
+      - name: Rebuild Merchant 2F
+        script: |
+          chmod +x setup-merchant-2f.sh
+          bash setup-merchant-2f.sh
       - name: Generate android folder
         script: |
           cd apps/merchant
