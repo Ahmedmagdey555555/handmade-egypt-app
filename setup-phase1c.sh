@@ -3,6 +3,140 @@ set -e
 
 mkdir -p apps/customer/lib/screens
 
+# ============ product_detail_screen.dart (تحديث الخيارات) ============
+cat > apps/customer/lib/screens/product_detail_screen.dart << 'FILE_END'
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+import '../models/product.dart';
+import '../providers/cart_provider.dart';
+import '../providers/favorites_provider.dart';
+
+class ProductDetailScreen extends StatelessWidget {
+  final Product product;
+  const ProductDetailScreen({super.key, required this.product});
+
+  void _addToCart(BuildContext context) {
+    if (product.availableOptions == null || product.availableOptions!.isEmpty) {
+      context.read<CartProvider>().add(product);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمت الإضافة للسلة')));
+      return;
+    }
+
+    // لو فيه خيارات، نفتح شاشة نطلب منه يكتبها
+    final controller = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, left: 16, right: 16, top: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('اختر مواصفات المنتج', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 10),
+            Text('المتاح: ${product.availableOptions}', style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 15),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(labelText: 'اكتب اختيارك هنا (مثال: أحمر، مقاس L)', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 15),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                style: FilledButton.styleFrom(backgroundColor: const Color(0xFFB07D62)),
+                onPressed: () {
+                  if (controller.text.isEmpty) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('من فضلك اكتب اختيارك')));
+                    return;
+                  }
+                  context.read<CartProvider>().add(product, options: controller.text.trim());
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمت الإضافة للسلة')));
+                },
+                child: const Text('إضافة للسلة'),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fav = context.watch<FavoritesProvider>();
+    final isFav = fav.isFavorite(product.id);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFFAF7F2),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 340, pinned: true,
+            backgroundColor: const Color(0xFFB07D62), foregroundColor: Colors.white,
+            actions: [
+              IconButton(onPressed: () => fav.toggle(product.id), icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Colors.red : Colors.white)),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              background: product.imageUrl == null ? Container(color: Colors.grey.shade300) : CachedNetworkImage(imageUrl: product.imageUrl!, fit: BoxFit.cover),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(product.title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 14),
+                  Text('${product.price.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFB07D62))),
+                  const SizedBox(height: 10),
+                  Text('وقت التحضير: ${product.preparationTime ?? "فوري"}', style: const TextStyle(fontSize: 14, color: Colors.blue, fontWeight: FontWeight.bold)),
+                  
+                  if (product.availableOptions != null && product.availableOptions!.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Text('الخيارات المتاحة: ${product.availableOptions}', style: const TextStyle(fontSize: 14, color: Colors.orange, fontWeight: FontWeight.bold)),
+                  ],
+
+                  if (product.warranty != null) ...[
+                    const SizedBox(height: 15),
+                    Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Row(children: [const Icon(Icons.shield, color: Colors.green), const SizedBox(width: 8), Text('ضمان: ${product.warranty}', style: const TextStyle(color: Colors.green))])),
+                  ],
+                  const SizedBox(height: 24),
+                  const Text('الوصف', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  Text(product.description ?? 'لا يوجد وصف', style: TextStyle(fontSize: 15, color: Colors.grey.shade700, height: 1.6)),
+                  const SizedBox(height: 120),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14), color: Colors.white,
+        child: SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => _addToCart(context),
+                  icon: const Icon(Icons.shopping_cart), label: const Text('أضف للسلة', style: TextStyle(fontSize: 16)),
+                  style: FilledButton.styleFrom(backgroundColor: const Color(0xFFB07D62), padding: const EdgeInsets.symmetric(vertical: 16)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+FILE_END
+
 # ============ search_screen.dart ============
 cat > apps/customer/lib/screens/search_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
@@ -61,15 +195,9 @@ class _SearchScreenState extends State<SearchScreen> {
           textInputAction: TextInputAction.search,
           onSubmitted: _search,
           style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
-            hintText: 'ابحث...',
-            hintStyle: TextStyle(color: Colors.white70),
-            border: InputBorder.none,
-          ),
+          decoration: const InputDecoration(hintText: 'ابحث...', hintStyle: TextStyle(color: Colors.white70), border: InputBorder.none),
         ),
-        actions: [
-          IconButton(icon: const Icon(Icons.search), onPressed: () => _search(_controller.text)),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.search), onPressed: () => _search(_controller.text))],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -90,12 +218,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  child: ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-                                    child: p.imageUrl == null ? Container(color: Colors.grey.shade200) : CachedNetworkImage(imageUrl: p.imageUrl!, fit: BoxFit.cover, width: double.infinity),
-                                  ),
-                                ),
+                                Expanded(child: ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(14)), child: p.imageUrl == null ? Container(color: Colors.grey.shade200) : CachedNetworkImage(imageUrl: p.imageUrl!, fit: BoxFit.cover, width: double.infinity))),
                                 Padding(
                                   padding: const EdgeInsets.all(10),
                                   child: Column(
@@ -118,7 +241,7 @@ class _SearchScreenState extends State<SearchScreen> {
 }
 FILE_END
 
-# ============ cart_screen.dart ============
+# ============ cart_screen.dart (تحديث الخيارات) ============
 cat > apps/customer/lib/screens/cart_screen.dart << 'FILE_END'
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -144,36 +267,36 @@ class CartScreen extends StatelessWidget {
               itemCount: items.length,
               itemBuilder: (c, i) {
                 final item = items[i];
+                // المفتاح الفريد عشان الخيارات
+                final key = item.selectedOptions == null ? item.product.id : '${item.product.id}-${item.selectedOptions}';
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
                   child: Row(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: item.product.imageUrl == null ? Container(width: 80, height: 80, color: Colors.grey.shade200) : CachedNetworkImage(imageUrl: item.product.imageUrl!, width: 80, height: 80, fit: BoxFit.cover),
-                      ),
+                      ClipRRect(borderRadius: BorderRadius.circular(10), child: item.product.imageUrl == null ? Container(width: 80, height: 80, color: Colors.grey.shade200) : CachedNetworkImage(imageUrl: item.product.imageUrl!, width: 80, height: 80, fit: BoxFit.cover)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(item.product.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                            if (item.selectedOptions != null)
+                              Text('الخيار: ${item.selectedOptions}', style: const TextStyle(color: Colors.orange, fontSize: 12)),
                             const SizedBox(height: 4),
                             Text('${item.product.price.toStringAsFixed(0)} ج.م', style: const TextStyle(color: Color(0xFFB07D62), fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                _qtyBtn(Icons.remove, () => cart.decrement(item.product.id)),
+                                _qtyBtn(Icons.remove, () => cart.decrement(key)),
                                 Padding(padding: const EdgeInsets.symmetric(horizontal: 14), child: Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-                                _qtyBtn(Icons.add, () => cart.increment(item.product.id)),
+                                _qtyBtn(Icons.add, () => cart.increment(key)),
                               ],
                             ),
                           ],
                         ),
                       ),
-                      IconButton(onPressed: () => cart.remove(item.product.id), icon: const Icon(Icons.delete_outline, color: Colors.red)),
+                      IconButton(onPressed: () => cart.remove(key), icon: const Icon(Icons.delete_outline, color: Colors.red)),
                     ],
                   ),
                 );
@@ -182,22 +305,14 @@ class CartScreen extends StatelessWidget {
       bottomNavigationBar: items.isEmpty
           ? null
           : Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))]),
+              padding: const EdgeInsets.all(16), decoration: const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))]),
               child: SafeArea(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('الإجمالي', style: TextStyle(fontSize: 17)), Text('${cart.total.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFB07D62)))]),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen())),
-                        style: FilledButton.styleFrom(backgroundColor: const Color(0xFFB07D62), padding: const EdgeInsets.symmetric(vertical: 16)),
-                        child: const Text('إتمام الطلب', style: TextStyle(fontSize: 16)),
-                      ),
-                    ),
+                    SizedBox(width: double.infinity, child: FilledButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen())), style: FilledButton.styleFrom(backgroundColor: const Color(0xFFB07D62), padding: const EdgeInsets.symmetric(vertical: 16)), child: const Text('إتمام الطلب', style: TextStyle(fontSize: 16)))),
                   ],
                 ),
               ),
@@ -208,17 +323,13 @@ class CartScreen extends StatelessWidget {
   Widget _qtyBtn(IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 32, height: 32,
-        decoration: BoxDecoration(color: const Color(0xFFB07D62).withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, size: 18, color: const Color(0xFFB07D62)),
-      ),
+      child: Container(width: 32, height: 32, decoration: BoxDecoration(color: const Color(0xFFB07D62).withOpacity(0.15), borderRadius: BorderRadius.circular(8)), child: Icon(icon, size: 18, color: const Color(0xFFB07D62))),
     );
   }
 }
 FILE_END
 
-# ============ checkout_screen.dart ============
+# ============ checkout_screen.dart (الهدية الديناميكية) ============
 cat > apps/customer/lib/screens/checkout_screen.dart << 'FILE_END'
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -243,6 +354,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _landmark = TextEditingController();
   final _phone = TextEditingController();
   final _couponCode = TextEditingController();
+  final _giftMessage = TextEditingController(); 
   
   String _payment = 'vodafone';
   String? _governorate;
@@ -251,6 +363,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _loading = false;
   bool _fetchingLocation = true;
   
+  bool _isGift = false; 
+  double _giftFee = 20.0; 
+  
   double _walletBalance = 0;
   bool _useWallet = false;
   
@@ -258,7 +373,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String _couponMsg = '';
   File? _receiptImage;
 
-  // أرقام المحافظ
   String _vodafoneNum = 'جاري التحميل...';
   String _etisalatNum = 'جاري التحميل...';
   String _instapayAddr = 'جاري التحميل...';
@@ -297,6 +411,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           if (s['key'] == 'vodafone_cash_number') _vodafoneNum = s['value'].toString();
           if (s['key'] == 'etisalat_cash_number') _etisalatNum = s['value'].toString();
           if (s['key'] == 'instapay_address') _instapayAddr = s['value'].toString();
+          if (s['key'] == 'gift_fee') _giftFee = double.tryParse(s['value'].toString()) ?? 20.0;
         }
       });
     } catch (_) {}
@@ -374,8 +489,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final cart = context.read<CartProvider>();
       final uid = Supabase.instance.client.auth.currentUser!.id;
       final delivery = _calculateDelivery(cart.total);
-      final walletUsed = _useWallet ? (_walletBalance > (cart.total + delivery - _discount) ? (cart.total + delivery - _discount) : _walletBalance) : 0;
-      final finalTotal = cart.total + delivery - _discount - walletUsed;
+      final currentGiftFee = _isGift ? _giftFee : 0.0;
+      
+      final walletUsed = _useWallet ? (_walletBalance > (cart.total + delivery + currentGiftFee - _discount) ? (cart.total + delivery + currentGiftFee - _discount) : _walletBalance) : 0;
+      final finalTotal = cart.total + delivery + currentGiftFee - _discount - walletUsed;
 
       String? receiptUrl;
       if (_receiptImage != null) {
@@ -394,7 +511,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'status': 'pending', 'address': _address.text.trim(), 'phone': _phone.text.trim(),
         'governorate': _governorate, 'delivery_fee': delivery,
         'building_no': _building.text.trim(), 'apartment_no': _apartment.text.trim(), 'landmark': _landmark.text.trim(),
-        'receipt_image_url': receiptUrl, 'payment_method': _payment
+        'receipt_image_url': receiptUrl, 'payment_method': _payment,
+        'is_gift': _isGift, 'gift_message': _isGift ? _giftMessage.text.trim() : null,
+        'gift_fee': currentGiftFee,
       }).select().single();
 
       for (final item in cart.items.values) {
@@ -417,8 +536,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
     final delivery = _calculateDelivery(cart.total);
-    final walletUsed = _useWallet ? (_walletBalance > (cart.total + delivery - _discount) ? (cart.total + delivery - _discount) : _walletBalance) : 0;
-    final finalTotal = cart.total + delivery - _discount - walletUsed;
+    final currentGiftFee = _isGift ? _giftFee : 0.0;
+    
+    final walletUsed = _useWallet ? (_walletBalance > (cart.total + delivery + currentGiftFee - _discount) ? (cart.total + delivery + currentGiftFee - _discount) : _walletBalance) : 0;
+    final finalTotal = cart.total + delivery + currentGiftFee - _discount - walletUsed;
 
     return Scaffold(
       appBar: AppBar(title: const Text('إتمام الطلب'), backgroundColor: const Color(0xFFB07D62), foregroundColor: Colors.white),
@@ -453,6 +574,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           TextField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم الهاتف', border: OutlineInputBorder())),
           
           const SizedBox(height: 20),
+          
+          // --- خيار الهدية ---
+          SwitchListTile(
+            title: const Text('إرسال كهدية 🎁', style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text('سنقوم بتغليف الطلب كهدية (+$_giftFee ج.م)'),
+            value: _isGift,
+            activeColor: const Color(0xFFB07D62),
+            onChanged: (v) => setState(() => _isGift = v),
+          ),
+          if (_isGift)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: TextField(
+                controller: _giftMessage, maxLines: 2,
+                decoration: const InputDecoration(labelText: 'اكتب رسالة الهدية هنا...', border: OutlineInputBorder(), prefixIcon: Icon(Icons.card_giftcard)),
+              ),
+            ),
+          
+          const SizedBox(height: 20),
           const Text('طريقة الدفع', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ..._methods.map((m) => ListTile(
             leading: Radio<String>(value: m['key'] as String, groupValue: _payment, onChanged: (v) => setState(() => _payment = v!)),
@@ -477,14 +617,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        _payment == 'vodafone' ? _vodafoneNum : (_payment == 'etisalat' ? _etisalatNum : _instapayAddr),
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.copy, color: Color(0xFFB07D62)),
-                        onPressed: () => _copyToClipboard(_payment == 'vodafone' ? _vodafoneNum : (_payment == 'etisalat' ? _etisalatNum : _instapayAddr)),
-                      ),
+                      Text(_payment == 'vodafone' ? _vodafoneNum : (_payment == 'etisalat' ? _etisalatNum : _instapayAddr), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                      IconButton(icon: const Icon(Icons.copy, color: Color(0xFFB07D62)), onPressed: () => _copyToClipboard(_payment == 'vodafone' ? _vodafoneNum : (_payment == 'etisalat' ? _etisalatNum : _instapayAddr))),
                     ],
                   ),
                 ],
@@ -501,10 +635,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           const SizedBox(height: 20),
           TextField(
             controller: _couponCode,
-            decoration: InputDecoration(
-              labelText: 'كود خصم', border: const OutlineInputBorder(),
-              suffixIcon: TextButton(onPressed: _applyCoupon, child: const Text('تطبيق')),
-            ),
+            decoration: InputDecoration(labelText: 'كود خصم', border: const OutlineInputBorder(), suffixIcon: TextButton(onPressed: _applyCoupon, child: const Text('تطبيق'))),
           ),
           if (_couponMsg.isNotEmpty) Text(_couponMsg, style: TextStyle(color: _discount > 0 ? Colors.green : Colors.red)),
 
@@ -513,8 +644,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             value: _useWallet, onChanged: (v) => setState(() => _useWallet = v),
           ),
 
-          const Divider(),
-          Text('الإجمالي: ${finalTotal.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFB07D62))),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: const Color(0xFFB07D62).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              children: [
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('المنتجات', style: TextStyle(fontSize: 15)), Text('${cart.total.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600))]),
+                const SizedBox(height: 6),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('التوصيل', style: TextStyle(fontSize: 15)), Text(delivery == 0 ? 'مجاني' : '${delivery.toStringAsFixed(0)} ج.م', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: delivery == 0 ? Colors.green : Colors.black))]),
+                if (_isGift) ...[
+                  const SizedBox(height: 6),
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('تغليف هدية', style: TextStyle(fontSize: 15, color: Colors.orange)), Text('+ ${_giftFee.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.orange))]),
+                ],
+                if (_discount > 0) ...[
+                  const SizedBox(height: 6),
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('الخصم', style: TextStyle(fontSize: 15, color: Colors.green)), Text('- ${_discount.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.green))]),
+                ],
+                if (walletUsed > 0) ...[
+                  const SizedBox(height: 6),
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('من المحفظة', style: TextStyle(fontSize: 15, color: Colors.blue)), Text('- ${walletUsed.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.blue))]),
+                ],
+                const Divider(height: 20),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('الإجمالي', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)), Text('${finalTotal.toStringAsFixed(0)} ج.م', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFB07D62)))]),
+              ],
+            ),
+          ),
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _loading ? null : _submit,
