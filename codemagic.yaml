@@ -43,11 +43,11 @@ workflows:
         script: |
           cd apps/customer
           flutter create --platforms=android --org com.handmade --project-name customer_app .
-      - name: Force All Plugins to SDK 36
+      - name: Force SDK 36 for All Plugins
         script: |
           cd apps/customer/android
           
-          # كتابة ملف build.gradle الرئيسي لإجبار كل المكتبات على إصدار 36
+          # كتابة ملف build.gradle الرئيسي بطريقة جديدة وآمنة
           cat > build.gradle << 'EOF'
           allprojects {
               repositories {
@@ -60,18 +60,19 @@ workflows:
           subprojects {
               project.buildDir = "${rootProject.buildDir}/${project.name}"
           }
-          subprojects {
-              project.evaluationDependsOn(":app")
-          }
 
-          // الإجبار على إصدار 36 لكل المكتبات القديمة
-          subprojects {
-              afterEvaluate { project ->
-                  if (project.extensions.findByName("android") != null) {
-                      project.android {
-                          compileSdkVersion 36
-                          buildToolsVersion "36.0.0"
-                      }
+          // الإجبار على إصدار 36 لكل المكتبات باستخدام pluginManager
+          subprojects { project ->
+              project.pluginManager.withPlugin('com.android.application') {
+                  project.android {
+                      compileSdkVersion 36
+                      buildToolsVersion "36.0.0"
+                  }
+              }
+              project.pluginManager.withPlugin('com.android.library') {
+                  project.android {
+                      compileSdkVersion 36
+                      buildToolsVersion "36.0.0"
                   }
               }
           }
