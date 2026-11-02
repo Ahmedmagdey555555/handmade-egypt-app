@@ -196,6 +196,24 @@ workflows:
         script: |
           chmod +x setup-merchant-2g.sh
           bash setup-merchant-2g.sh
+      # --- التعديلات الجديدة من هنا ---
+      - name: Rebuild Merchant 3A (Dashboard & Stock)
+        script: |
+          chmod +x setup-merchant-3a.sh
+          bash setup-merchant-3a.sh
+      - name: Rebuild Merchant 3B (Coupons & Bulk)
+        script: |
+          chmod +x setup-merchant-3b.sh
+          bash setup-merchant-3b.sh
+      - name: Rebuild Merchant 3C (QR & Shipments)
+        script: |
+          chmod +x setup-merchant-3c.sh
+          bash setup-merchant-3c.sh
+      - name: Rebuild Merchant 4A (Ship to Hub)
+        script: |
+          chmod +x setup-merchant-4a.sh
+          bash setup-merchant-4a.sh
+      # --- لحد هنا ---
       - name: Generate android folder
         script: |
           cd apps/merchant
