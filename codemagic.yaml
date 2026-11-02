@@ -192,6 +192,10 @@ workflows:
         script: |
           chmod +x setup-merchant-2f.sh
           bash setup-merchant-2f.sh
+      - name: Rebuild Merchant 2G (Gift & Variants)
+        script: |
+          chmod +x setup-merchant-2g.sh
+          bash setup-merchant-2g.sh
       - name: Generate android folder
         script: |
           cd apps/merchant
